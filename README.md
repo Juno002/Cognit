@@ -1,0 +1,575 @@
+
+# Cognit λ — Interactive Cognitive Journal
+```
+   ___                  _ _     λ
+  / __\___   __ _ _ __ (_) |_   
+ / /  / _ \ / _` | '_ \| | __|  
+/ /__| (_) | (_| | | | | | |_   
+\____/\___/ \__, |_| |_|_|\__|  
+            |___/                
+    Cognitive Transformation Engine
+```
+
+> **Reflect. Adjust. Iterate.**
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-active-success)
+![PWA](https://img.shields.io/badge/PWA-ready-purple)
+
+<p align="center">
+  <img src="https://placehold.co/700x350.gif?text=App+Demo+GIF" alt="Cognit Lambda Demo" width="700"/>
+</p>
+
+<p align="center">
+  <em>An open-source CBT (Cognitive Behavioral Therapy) and ERP (Exposure and Response Prevention) journal,<br/>
+  focused on <strong>privacy</strong>, <strong>evidence-based intervention</strong>, and <strong>offline-first design</strong>.</em>
+</p>
+
+---
+
+## ⚠️ **Important Notice**
+
+**This application does NOT replace professional mental health care.** 
+
+If you are experiencing a mental health crisis, please contact:
+- 🇺🇸 **988** — National Suicide Prevention Lifeline
+- 🇪🇸 **024** — Spain Crisis Line
+- 🇩🇴 **809-566-0100** — Dominican Republic Emergency Services
+- 🌍 **[findahelpline.com](https://findahelpline.com)** — Global directory
+
+**Or visit your nearest emergency room immediately.**
+
+This tool is designed to **complement** therapy, not replace it. Think of it as "homework support" between clinical sessions.
+
+---
+
+## 🎯 What Is Cognit λ?
+
+**This is NOT just a mood tracker.**
+
+Cognit λ is an **interactive cognitive coach** that teaches you to identify and restructure distorted thinking patterns using evidence-based CBT and ERP techniques. Unlike passive journaling apps, it provides:
+
+- **Real-time feedback** on thought distortions
+- **Objective metrics** (ICC, SUDS) to track cognitive change
+- **Behavioral interventions** (anti-rumination pauses, breathing exercises)
+- **100% privacy** (client-side encryption, zero cloud storage, zero analytics)
+- **Offline-first** (works on planes, basements, anywhere)
+
+---
+
+## 📸 Quick Preview
+
+| Feature | What It Does |
+|---------|--------------|
+| **Secure Vault** | **Client-side encryption (AES-GCM)** protects all your data with a password you choose. |
+| **3-Level CBT Cycle** | Progress from basic logging (L1) → creative displacement (L2) → full cognitive restructuring (L3) |
+| **Distortion Detector** | Identifies patterns like Catastrophizing, Mental Filter, Mind Reading in your automatic thoughts |
+| **ICC Measurement** | Quantifies how effectively you reduce belief in distorted thoughts (0.0 - 1.0 scale) |
+| **ERP Protocol** | Build fear hierarchies, log exposures, track SUDS habituation over time |
+| **Crisis Plan** | Personal safety contacts + coping phrases, activated when high-risk language detected |
+| **Auto-Lock** | Automatically locks the journal after a period of inactivity to protect from prying eyes. |
+| **Offline Support** | Full PWA with Service Workers—works without internet |
+
+---
+
+## 🎯 Who Is This For?
+
+### ✅ **Ideal Users:**
+- Individuals in **active therapy** tracking homework between sessions
+- People practicing **self-directed CBT** (with prior therapist guidance)
+- Those managing **anxiety, depression, OCD** with evidence-based techniques
+- Anyone wanting **objective progress metrics** instead of vague "mood tracking"
+- Therapists looking for a **privacy-respecting** tool to recommend to clients
+
+### ⚠️ **NOT Suitable For:**
+- **Acute crisis situations** (use emergency services instead)
+- Replacing professional diagnosis or medication management
+- First-time CBT users without basic understanding (consider reading *Feeling Good* by David Burns first)
+- Expecting an AI chatbot therapist (this is a structured tool, not conversational AI)
+
+---
+
+## 🚀 Installation
+
+### **Option 1: Use as PWA** (Recommended)
+1. Visit **[your-domain.com](https://your-domain.com)** *(replace with actual URL)*
+2. Click the **"Install"** prompt in your browser
+3. Launch from your home screen
+4. That's it! Works 100% offline.
+
+**Supported Platforms:**
+- ✅ Chrome/Edge (Desktop + Android)
+- ✅ Safari (iOS + macOS)
+- ✅ Firefox (Desktop + Android)
+
+---
+
+### **Option 2: Self-Hosted** (Advanced)
+
+```bash
+# Clone the repository
+git clone https://github.com/[your-username]/cognit-lambda.git
+cd cognit-lambda
+
+# Install dependencies
+npm install
+
+# Run in development mode
+npm run dev
+# → Open http://localhost:9002
+
+# Build for production
+npm run build
+npm start
+```
+
+**System Requirements:**
+- Node.js 18+
+- 50MB disk space
+- Modern browser with IndexedDB and Web Crypto API support
+
+---
+
+### **Option 3: Deploy to Vercel** (1-Click)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/[your-username]/cognit-lambda)
+
+**Other Hosting Options:**
+- Netlify (drag & drop `out/` folder)
+- GitHub Pages (static export)
+- Self-hosted VPS (nginx + PM2)
+
+---
+
+## 📖 Quick Start Guide
+
+### **Step 0: Create Your Secure Vault**
+The first time you open the app, you will be prompted to create a password (or PIN). This password is used to encrypt all your journal entries and data directly on your device.
+> **⚠️ CRITICAL WARNING:** This password is the ONLY key to your data. If you forget it, your data will be **permanently unrecoverable**. We (the developers) have zero access to it and cannot help you restore it. Write it down and store it securely.
+
+---
+
+### **Step 1: Your First Session (L1 - Self-Observation)**
+1. Click **"New Session"**
+2. Select **Level 1** (basic logging)
+3. Answer the contextual prompt (e.g., *"What thought visited you most today?"*)
+4. Rate your **emotion intensity** (1-10)
+5. Click **Save**
+
+**Goal:** Build awareness without judgment. Just observe.
+
+---
+
+### **Step 2: Progress to L3 (Full Cognitive Restructuring)**
+
+When ready for deeper work:
+
+1. Select **Level 3**
+2. Fill out the complete CBT cycle:
+   - **Situation/Trigger**: What happened?
+   - **Automatic Thought**: What did you think immediately?
+   - **Original Intensity**: How much did you believe it? (1-10)
+   - **Evidence Against**: Challenge the thought with facts
+   - **Alternative Response**: Write a balanced perspective (min. 75 characters)
+   - **Final Credibility**: How much do you believe it now? (1-10)
+
+3. The app calculates your **ICC (Cognitive Change Index)**:
+   ```
+   ICC = (Original Intensity - Final Credibility) / 10
+   
+   Example:
+   Original: 8/10 ("I'm a total failure")
+   Final: 3/10 (after challenging with evidence)
+   ICC: (8 - 3) / 10 = 0.50 (Moderate change)
+   ```
+
+4. **Feedback Loop:**
+   - ICC > 0.60: ✅ "Excellent cognitive shift!"
+   - ICC < 0.35: ⚠️ "Try gathering more evidence"
+
+---
+
+### **Step 3: Build Your Crisis Plan**
+1. Go to **⚙️ Settings → Safety/Adherence**
+2. Add **emergency contacts** (name + phone)
+3. Write your **personal coping phrase**  
+   (e.g., *"This feeling is temporary. I will call [Contact] and use my breathing exercise."*)
+
+**How It Activates:**
+- App detects high-risk keywords (e.g., "suicide", "end it all")
+- OR intensity ≥ 9/10 + negative emotion
+- **Immediately shows:**
+  - Your coping phrase
+  - Your emergency contacts
+  - Local/global crisis hotlines
+  - 4-7-8 breathing guide
+
+---
+
+### **Step 4: Weekly Export (Data Ownership)**
+1. Click **⚡ Auto-ZIP**
+2. Downloads 4 files:
+   - `CBT-data-[date].json` (full, **encrypted** backup for re-import)
+   - `CBT-report-[date].md` (Markdown summary for therapist)
+   - `CBT-data-raw-[date].csv` (raw data for analysis)
+   - `README-[date].txt` (instructions)
+
+**Store these in:**
+- Local encrypted folder (VeraCrypt, BitLocker)
+- Personal cloud (Google Drive, iCloud—your choice)
+- USB drive (offline backup)
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Why? |
+|-------|-----------|------|
+| **Framework** | Next.js 14 (App Router) | SEO, performance, great DX |
+| **Language** | TypeScript | Type safety for complex therapy logic |
+| **UI Components** | ShadCN UI (Radix + Tailwind) | Accessible, customizable, modern |
+| **Client-Side Encryption** | Web Crypto API (AES-GCM) | Strong, browser-native encryption for data at rest. |
+| **Data Visualization** | Recharts | Responsive charts for ICC/SUDS tracking |
+| **Local Storage** | IndexedDB (Encrypted) | Handles 100s of MB, survives restarts |
+| **PWA** | Workbox + Service Workers | Offline-first, installable |
+| **Icons** | Lucide React | Lightweight, consistent design |
+| **Analytics** | **None** | Zero tracking = maximum privacy |
+| **Backend** | **None** | No servers = no data breaches |
+
+### **Why These Choices?**
+
+```
+Traditional Mental Health Apps:
+❌ Require account creation (email, password)
+❌ Store data on their servers (vulnerable to hacks)
+❌ Track analytics (Google/Facebook pixels)
+❌ Require internet connection
+❌ Charge subscription fees
+
+Cognit λ:
+✅ No accounts (anonymous by design)
+✅ Data is ENCRYPTED and stays in YOUR browser
+✅ Zero external requests (no tracking)
+✅ Works 100% offline (PWA)
+✅ MIT licensed (free forever)
+```
+
+---
+
+## 🧠 How It Works (Technical Overview)
+
+```mermaid
+graph TD
+    subgraph "Device"
+    A[User Input] --> B{App is Locked?}
+    B -->|Yes| C[Prompt for Password/PIN]
+    C --> D{Password OK?}
+    D -->|No| B
+    D -->|Yes| E[Decrypt Vault in Memory]
+    E --> F[Show Journal UI]
+    
+    F --> G[New/Edit Session]
+    G --> H[Update Data in Memory]
+    H --> I[Encrypt Vault]
+    I --> J[💾 Save to IndexedDB]
+    J --> K[Show Confirmation]
+    
+    subgraph "Security Layer"
+      E
+      I
+    end
+    end
+```
+
+### **Data Flow**
+1. **Unlock**: User enters password. Data is decrypted from IndexedDB into memory.
+2. **Input**: User fills CBT fields (situation, thought, evidence).
+3. **In-Memory Update**: All changes are made to the data held in React's state.
+4. **Validation**: Schema checks, L3 completeness.
+5. **Analysis**: Distortion detection, ICC calculation, crisis scan.
+6. **Save**: On saving a session, the entire data vault in memory is re-encrypted with the user's key and written back to IndexedDB as a single encrypted blob.
+7. **Lock**: After inactivity or closing the tab, the in-memory data is wiped, leaving only the encrypted data on disk.
+
+---
+
+## 🔒 Privacy & Security
+
+### **What We DON'T Do:**
+- ❌ **No analytics** (not even privacy-friendly ones like Plausible)
+- ❌ **No cloud storage** (data never leaves your device unless you manually export it)
+- ❌ **No user accounts** (no email, OAuth—nothing)
+- ❌ **No cookies** (except PWA service worker cache)
+- ❌ **No third-party scripts** (no CDN dependencies, no external fonts)
+- ❌ **No unencrypted data at rest**.
+
+### **What We DO:**
+- ✅ **Client-Side Encryption (AES-GCM):** All your journal data is encrypted with a key derived from your password (using PBKDF2). The encrypted data is stored in IndexedDB.
+- ✅ **Zero Knowledge:** Your password is never stored or sent anywhere. It exists only in your head and briefly in memory during use. We cannot access or recover your data.
+- ✅ **Auto-Lock:** The app automatically locks after a few minutes of inactivity, requiring your password again to access the data.
+- ✅ **Full Export Control:** You decide when/where to backup your **encrypted** data.
+- ✅ **Open source:** Audit the code yourself.
+
+### **HIPAA/GDPR Compliance:**
+
+**Technically not applicable** because:
+- We don't collect data (GDPR exemption: no data processor)
+- We don't transmit data (HIPAA exemption: no covered entity)
+
+**However, the architecture is privacy-by-design:**
+- No PII ever leaves the device
+- No server-side processing exists
+- User has 100% control over data lifecycle, including its encryption key.
+
+**⚠️ Clinical Use Warning:**  
+If you self-host this for a **therapeutic practice**, consult legal counsel about:
+- Informed consent requirements
+- Data breach liability (if patient's device is compromised)
+- Record-keeping regulations in your jurisdiction
+
+**This app is designed for personal use, not as a clinical record system.**
+
+---
+
+## 🧭 Code Structure
+
+```
+cognit-lambda/
+├── public/
+│   ├── icons/
+│   ├── manifest.json
+│   └── sw.js
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx     # Root layout (with VaultProvider)
+│   │   └── page.tsx       # Main UI (handles vault state)
+│   ├── components/
+│   │   ├── auth/          # SetupVault, UnlockModal
+│   │   ├── modals/
+│   │   └── ui/            # ShadCN components
+│   ├── context/
+│   │   └── vault/
+│   │       └── VaultProvider.tsx # Core encryption & state logic
+│   ├── hooks/
+│   │   ├── use-cbt-journal.ts    # Journal logic (reads from vault)
+│   │   └── ...
+│   ├── lib/
+│   │   ├── client-crypto.ts # AES-GCM encryption functions
+│   │   ├── storage.ts       # IndexedDB helper for vault
+│   │   └── ...
+│   └── types/
+│       └── index.ts
+└── README.md               # You are here
+```
+
+---
+
+## 🤝 Contributing
+
+**Contributions are welcome!** Whether you're a:
+- 👨‍⚕️ **Mental health professional** (validate clinical accuracy)
+- 💻 **Developer** (improve code, fix bugs)
+- 🎨 **Designer** (enhance UX/accessibility)
+- 📝 **Writer** (improve docs, translations)
+- 🧪 **Beta tester** (report issues, suggest features)
+
+### **How to Contribute:**
+
+1. **Fork the repository**
+2. **Create a feature branch**  
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Make your changes** (follow existing code style)
+4. **Test thoroughly** (especially L3 validation, ICC calculation, and vault encryption/decryption)
+5. **Commit with clear messages**  
+   ```bash
+   git commit -m "Add: Distortion detection for 'Should Statements'"
+   ```
+6. **Push to your fork**  
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+7. **Open a Pull Request** with description of changes
+
+### **Contribution Guidelines:**
+- ✅ **Clinical changes**: Cite sources (e.g., Beck 1979, Burns 1980)
+- ✅ **Code changes**: Add TypeScript types, write unit tests
+- ✅ **UI changes**: Ensure WCAG 2.1 AA compliance
+- ✅ **Docs changes**: Use clear, jargon-free language
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 🗺️ Roadmap
+
+### **v1.1 (Q2 2025)**
+- [ ] **Therapist Export**: PDF reports with ICC graphs for clinical sharing
+- [ ] **Accessibility Audit**: Full WCAG 2.1 AA compliance
+- [ ] **Portuguese Translation**: Full i18n support
+- [ ] **Onboarding Tour**: Interactive guide for first-time users (Post-vault setup)
+
+### **v1.2 (Q3 2025)**
+- [ ] **Predictive Patterns**: Local ML model (TensorFlow.js) for early warning
+- [ ] **Advanced Graphing**: Custom date ranges, emotion correlation matrices
+- [ ] **Wearable Import**: Manual CSV import from Fitbit/Apple Watch heart rate data
+- [ ] **Medication Tracker**: Optional log for psych meds (timestamps only, no dosage)
+
+### **v2.0 (Future)**
+- [ ] **Optional E2E Encrypted Sync**: Self-hosted server option (ownCloud/Nextcloud)
+- [ ] **Collaborative Mode**: Share anonymized data with therapist (consent-based)
+- [ ] **Research Participation**: Opt-in to contribute to CBT efficacy studies
+
+### **Community Wishlist**
+Vote on features at [GitHub Discussions](https://github.com/[your-username]/cognit-lambda/discussions)
+
+---
+
+## ❓ Frequently Asked Questions
+
+### **General**
+
+**Q: Is my data really secure?**  
+A: Yes. All your data is encrypted on your device using your password. We use the standard and secure AES-GCM algorithm via the browser's native Web Crypto API. We have **zero servers** and **zero knowledge** of your password, so there's nothing for us to hack or access.
+
+**Q: What if I forget my password?**  
+A: **Your data will be permanently lost.** Because the encryption key is derived from your password and we never store it, there is absolutely no way to recover your data. This is a fundamental trade-off for true privacy. Please store your password securely.
+
+**Q: What if I clear my browser cache/data?**  
+A: You'll lose the encrypted data vault. **Prevention**: Use Auto-ZIP weekly to export backups of your encrypted data. You can re-import this file later and unlock it with your password.
+
+**Q: Can I use this on multiple devices?**  
+A: Not automatically. By design, there is no cloud sync. You can manually export your encrypted vault from Device A and import it on Device B, using the same password to unlock it.
+
+---
+
+### **Clinical**
+
+**Q: Can I use this instead of therapy?**  
+A: **NO.** This complements therapy, doesn't replace it. Use it for:
+- Homework between sessions
+- Tracking patterns to discuss with therapist
+- Practicing techniques you learned in therapy
+
+**Q: Will this cure my anxiety/depression?**  
+A: No app "cures" mental health conditions. But **CBT is evidence-based** and clinically proven effective when practiced consistently with professional guidance.
+
+**Q: Can I share my data with my therapist?**  
+A: Yes! Use **Markdown Export** to generate a clean, unencrypted report. Many therapists appreciate ICC and SUDS metrics. The JSON backup, however, remains encrypted.
+
+---
+
+### **Technical**
+
+**Q: Why not a native iOS/Android app?**  
+A: PWAs work on all platforms without app store approval or separate codebases. You can "install" this on any device and it behaves like a native app. With client-side encryption, we can achieve a high level of security without needing a native build.
+
+**Q: Can I self-host this for my clinic?**  
+A: Yes! It's MIT licensed. See [SELF_HOSTING.md](./docs/SELF_HOSTING.md). Consult legal counsel for clinical compliance.
+
+**Q. Does the auto-lock feature protect me if I leave my computer unlocked?**
+A. Yes. After a few minutes of inactivity, the app will lock itself, requiring your password again. This protects your data from someone accessing your device while it's unlocked and unattended.
+
+---
+
+## 🙏 Acknowledgments
+
+This project, while developed independently through lived experience and empirical iteration, aligns remarkably with established clinical research. Recognition to the pioneers:
+
+### **Clinical Foundations:**
+
+**Dr. Aaron T. Beck** (1921-2021)  
+*Father of Cognitive Therapy*  
+His work on automatic thoughts, cognitive distortions, and thought records forms the theoretical backbone of this app's L3 methodology. The ICC metric is inspired by his emphasis on measuring belief change.
+
+**Dr. David D. Burns**  
+*Author of "Feeling Good: The New Mood Therapy" (1980)*  
+The app's Daily Mood Log structure mirrors his Triple Column Technique, though developed independently. His work made CBT accessible to millions.
+
+**Dr. Edna B. Foa**  
+*Pioneer of Exposure and Response Prevention (ERP)*  
+The fear hierarchy and SUDS tracking features follow her clinical protocol for anxiety disorders and OCD treatment.
+
+### **Technical Foundations:**
+
+**shadcn/ui** — Beautiful, accessible React components  
+**Vercel** — Next.js framework and deployment platform  
+**Web Crypto API** — For strong, browser-native client-side encryption.
+
+### **Community:**
+
+The open-source mental health community, lived experience advocates, and everyone fighting the stigma around seeking help.
+
+---
+
+**Note:** This app was built empirically by someone who experienced CBT/ERP firsthand, not by following academic textbooks. The fact that it independently converged on clinically-validated methods is a testament to the universality of cognitive science—and the value of lived experience in tool design.
+
+---
+
+## 📚 Recommended Reading
+
+If you want to deepen your understanding of the techniques used in this app:
+
+- **"Feeling Good: The New Mood Therapy"** by David Burns  
+  → The bible of self-directed CBT
+
+- **"Mind Over Mood"** by Greenberger & Padesky  
+  → Workbook format, structured exercises
+
+- **"The Anxiety and Phobia Workbook"** by Edmund Bourne  
+  → Comprehensive guide including ERP protocols
+
+- **"Cognitive Behavior Therapy: Basics and Beyond"** by Judith Beck  
+  → Clinical textbook (for therapists or advanced users)
+
+*Disclaimer: Reading is not therapy. Consider working with a licensed professional.*
+
+---
+
+## 💬 Support & Community
+
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/[your-username]/cognit-lambda/issues)
+- **💡 Feature Requests**: [GitHub Discussions](https://github.com/[your-username]/cognit-lambda/discussions)
+- **🔐 Security Issues**: Email `security@cognitlambda.app` *(example)*
+- **🐦 Updates**: [@CognitLambda](https://twitter.com/cognitlambda) *(example)*
+
+**Not on GitHub?** That's okay! You can still use the app—it's designed for everyone, not just developers.
+
+---
+
+## 📄 License
+
+**MIT License** © 2025 [Your Name]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software...
+
+See [LICENSE](./LICENSE) for full text.
+
+### **What This Means:**
+- ✅ Use it personally for free
+- ✅ Use it in your clinic (inform patients it's not a medical device)
+- ✅ Modify it for your needs
+- ✅ Contribute improvements back (optional, appreciated)
+- ❌ We provide no warranty (use at your own risk)
+
+---
+
+<p align="center">
+  <strong>Made with 💙 by someone who needed this tool to exist</strong><br>
+  <em>"Transform your thoughts, one function at a time."</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/[your-username]/cognit-lambda">⭐ Star on GitHub</a> •
+  <a href="https://your-domain.com">🌐 Try the Demo</a> •
+  <a href="./CONTRIBUTING.md">🤝 Contribute</a>
+</p>
+
+---
+
+<p align="center">
+  <sub>If this tool helped you, consider sharing it with someone who might need it. ❤️</sub>
+</p>
+
+    

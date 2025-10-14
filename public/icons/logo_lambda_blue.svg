@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style type="text/css"><![CDATA[
+      .lambda { font-family: "JetBrains Mono", "Courier New", monospace; font-weight: 700; font-size: 520px; fill: #2563EB; }
+    ]]></style>
+  </defs>
+  <rect width="100%" height="100%" fill="#FFFFFF" rx="122" ry="122"/>
+  <!-- circle border achieved with centered circle having stroke -->
+  <circle cx="512.0" cy="512.0" r="461.0" fill="none" stroke="#2563EB" stroke-width="102" />
+  <!-- lambda symbol centered -->
+  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" class="lambda">λ</text>
+</svg>

@@ -1,0 +1,172 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-from: #f8fbff;
+    --bg-to: #ffffff;
+    --background: 210 100% 98%; /* Derived from linear gradient */
+    --foreground: 240 10% 4%;
+    
+    --card: 0 0% 100% / 0.45;
+    --card-foreground: 240 10% 4%;
+    
+    --popover: 0 0% 100% / 0.45;
+    --popover-foreground: 240 10% 4%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 217 91% 96%;
+    --accent-foreground: 217 91% 60%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 217 91% 60% / 0.12;
+    --input: 0 0% 100% / 0.6;
+    --ring: 217 91% 60%;
+
+    --radius: 1rem;
+
+    --success: 158 79% 44%;
+    --warning: 38 92% 50%;
+    --icc-metric: 262 84% 60%;
+
+    /* Slider Colors */
+    --slider-track: hsl(var(--secondary));
+    --slider-range: hsl(var(--primary));
+    --slider-thumb: hsl(var(--primary));
+    --slider-thumb-border: hsl(var(--primary));
+    --slider-thumb-shadow: 0 0 0 5px hsla(var(--primary), 0.2);
+  }
+
+  .dark {
+    --bg-from: #0d1117;
+    --bg-to: #111a24;
+    --background: 212 35% 9%; /* Derived from linear gradient */
+    --foreground: 210 40% 98%;
+
+    --card: 216 34% 17% / 0.8;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 216 34% 17% / 0.8;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 70%;
+    --primary-foreground: 217 91% 10%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217 91% 16% / 0.5;
+    --accent-foreground: 217 91% 70%;
+
+    --destructive: 0 63% 51%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 217 91% 70% / 0.25;
+    --input: 216 34% 17% / 0.6;
+    --ring: 217 91% 70%;
+
+    --success: 142 71% 45%;
+    --warning: 48 96% 53%;
+    --icc-metric: 262 99% 77%;
+
+    /* Slider Colors */
+    --slider-track: hsl(var(--secondary));
+    --slider-range: hsl(var(--primary));
+    --slider-thumb: hsl(var(--primary));
+    --slider-thumb-border: hsl(var(--primary));
+    --slider-thumb-shadow: 0 0 0 5px hsla(var(--primary), 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-poppins);
+    background: linear-gradient(170deg, var(--bg-from) 0%, var(--bg-to) 100%);
+    background-attachment: fixed;
+  }
+  h1,h2,h3,h4,h5,h6 {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  .form-group-hidden {
+    @apply opacity-0 max-h-0 m-0 p-0 overflow-hidden transition-all duration-300 ease-in-out;
+    > div {
+        @apply p-0 m-0;
+    }
+  }
+
+  .form-group-visible {
+    @apply opacity-100 max-h-[500px] transition-all duration-500 ease-in-out;
+  }
+  
+  .breathing-circle {
+    @apply relative flex items-center justify-center m-auto;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: hsl(var(--success));
+    box-shadow: 0 0 10px hsl(var(--success));
+    transition: transform 0.1s;
+  }
+
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  .ripple-effect .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: hsla(var(--primary-foreground), 0.5);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+  }
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+
+@keyframes breathe-in { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2.5); opacity: 1; } }
+@keyframes breathe-out { 0% { transform: scale(2.5); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
+
+.breathing-circle.animate-in { animation: breathe-in 4s ease-in-out forwards; }
+.breathing-circle.animate-hold { animation: none; transform: scale(2.5); opacity: 1; }
+.breathing-circle.animate-out { animation: breathe-out 8s ease-in-out forwards; }
+
+
+@media (max-width: 640px) {
+  .sm-text-sm {
+    font-size: 0.8rem !important;
+    line-height: 1.1rem !important;
+  }
+  
+  .sm-text-base {
+    font-size: 0.9rem !important;
+    line-height: 1.2rem !important;
+  }
+}
