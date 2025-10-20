@@ -1,4 +1,3 @@
-
 # Cognit λ — Interactive Cognitive Journal
 ```
    ___                  _ _     λ
@@ -64,10 +63,14 @@ Cognit λ is an **interactive cognitive coach** that teaches you to identify and
 |---------|--------------|
 | **Secure Vault** | **Client-side encryption (AES-GCM)** protects all your data with a password you choose. |
 | **3-Level CBT Cycle** | Progress from basic logging (L1) → creative displacement (L2) → full cognitive restructuring (L3) |
+| **SMART Goals** | Define and track specific, measurable, achievable, relevant, and time-bound personal goals. |
+| **Behavioral Activation** | Define core values and schedule energizing activities to combat procrastination and anhedonia. |
+| **ERP Protocol** | Build fear hierarchies, log exposures, and track SUDS habituation over time with automated progress charts. |
+| **Sleep Diary (CBT-I)** | Log sleep patterns and automatically calculate sleep efficiency to improve sleep hygiene. |
+| **Mindfulness Tools** | Includes a Gratitude Journal and a Cognitive Defusion game to practice mindfulness. |
 | **Distortion Detector** | Identifies patterns like Catastrophizing, Mental Filter, Mind Reading in your automatic thoughts |
 | **ICC Measurement** | Quantifies how effectively you reduce belief in distorted thoughts (0.0 - 1.0 scale) |
-| **ERP Protocol** | Build fear hierarchies, log exposures, track SUDS habituation over time |
-| **Crisis Plan** | Personal safety contacts + coping phrases, activated when high-risk language detected |
+| **Crisis Plan** | Personal safety contacts + coping phrases, activated when high-risk language is detected |
 | **Auto-Lock** | Automatically locks the journal after a period of inactivity to protect from prying eyes. |
 | **Offline Support** | Full PWA with Service Workers—works without internet |
 
@@ -229,9 +232,9 @@ When ready for deeper work:
 | **Framework** | Next.js 14 (App Router) | SEO, performance, great DX |
 | **Language** | TypeScript | Type safety for complex therapy logic |
 | **UI Components** | ShadCN UI (Radix + Tailwind) | Accessible, customizable, modern |
-| **Client-Side Encryption** | Web Crypto API (AES-GCM) | Strong, browser-native encryption for data at rest. |
+| **Client-Side Encryption** | Web Crypto API (AES-GCM + PBKDF2) | Strong, browser-native encryption for data at rest. |
 | **Data Visualization** | Recharts | Responsive charts for ICC/SUDS tracking |
-| **Local Storage** | IndexedDB (Encrypted) | Handles 100s of MB, survives restarts |
+| **Local Storage** | IndexedDB (Encrypted Blob) | Handles 100s of MB, survives restarts |
 | **PWA** | Workbox + Service Workers | Offline-first, installable |
 | **Icons** | Lucide React | Lightweight, consistent design |
 | **Analytics** | **None** | Zero tracking = maximum privacy |
@@ -331,98 +334,33 @@ If you self-host this for a **therapeutic practice**, consult legal counsel abou
 
 ---
 
-## 🧭 Code Structure
+## 🗺️ Roadmap Terapéutico: ¡Completado y Mirando al Futuro!
 
-```
-cognit-lambda/
-├── public/
-│   ├── icons/
-│   ├── manifest.json
-│   └── sw.js
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx     # Root layout (with VaultProvider)
-│   │   └── page.tsx       # Main UI (handles vault state)
-│   ├── components/
-│   │   ├── auth/          # SetupVault, UnlockModal
-│   │   ├── modals/
-│   │   └── ui/            # ShadCN components
-│   ├── context/
-│   │   └── vault/
-│   │       └── VaultProvider.tsx # Core encryption & state logic
-│   ├── hooks/
-│   │   ├── use-cbt-journal.ts    # Journal logic (reads from vault)
-│   │   └── ...
-│   ├── lib/
-│   │   ├── client-crypto.ts # AES-GCM encryption functions
-│   │   ├── storage.ts       # IndexedDB helper for vault
-│   │   └── ...
-│   └── types/
-│       └── index.ts
-└── README.md               # You are here
-```
+Hemos completado con éxito todas las fases de nuestro roadmap terapéutico, transformando Cognit λ en un verdadero copiloto cognitivo.
 
----
+### ✅ **FASE 1: Análisis Proactivo e Insights (¡Completado!)**
+*   **Detección de Patrones de Rumiación**: La app ahora alerta al usuario sobre patrones de pensamiento negativos y repetitivos.
+*   **Análisis de Efectividad del TCC**: El dashboard muestra contra qué emociones la reestructuración es más o menos efectiva.
+*   **Identificación de Triggers Clave**: El sistema detecta y presenta las situaciones que más comúnmente disparan emociones intensas.
 
-## 🤝 Contributing
+### ✅ **FASE 2: Profundización en Ansiedad y TOC (¡Completado!)**
+*   **Gráficos de Habituación Automáticos**: Los nuevos gráficos de ERP visualizan cómo la ansiedad (SUDS) disminuye con cada sesión.
+*   **Registro y Desafío de Compulsiones**: Se añadió una opción en el log de exposición para registrar y desafiar las conductas de seguridad.
+*   **Verificador de Predicciones Catastróficas**: El usuario ahora puede comparar el resultado temido con el real, debilitando la amenaza.
 
-**Contributions are welcome!** Whether you're a:
-- 👨‍⚕️ **Mental health professional** (validate clinical accuracy)
-- 💻 **Developer** (improve code, fix bugs)
-- 🎨 **Designer** (enhance UX/accessibility)
-- 📝 **Writer** (improve docs, translations)
-- 🧪 **Beta tester** (report issues, suggest features)
+### ✅ **FASE 3: Herramientas Anti-Procrastinación y Depresión (¡Completado!)**
+*   **Subtareas (Chunking) en Actividades**: Las actividades ahora se pueden descomponer en subtareas manejables, combatiendo directamente la procrastinación.
+*   **Análisis del Balance Placer/Destreza**: El dashboard muestra un balance de las actividades realizadas, animando al usuario a equilibrar su semana.
+*   **Planificador Proactivo**: La app ahora sugiere agendar actividades vivificantes cuando detecta baja energía.
 
-### **How to Contribute:**
+### ✅ **FASE 4: Ecosistema y Calidad de Vida (¡Completado!)**
+*   **Soporte Completo Multi-idioma (i18n)**: Se ha finalizado la traducción completa a inglés y español.
+*   **Onboarding Interactivo y Recordatorios de Backup**: Se ha implementado un tour guiado para nuevos usuarios y un recordatorio inteligente para copias de seguridad.
+*   **Temas Personalizables**: El usuario puede ahora elegir entre varios temas de color para personalizar su experiencia.
 
-1. **Fork the repository**
-2. **Create a feature branch**  
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes** (follow existing code style)
-4. **Test thoroughly** (especially L3 validation, ICC calculation, and vault encryption/decryption)
-5. **Commit with clear messages**  
-   ```bash
-   git commit -m "Add: Distortion detection for 'Should Statements'"
-   ```
-6. **Push to your fork**  
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-7. **Open a Pull Request** with description of changes
+### 🚀 **Próximos Pasos (Visión a Futuro)**
+*   **[POST-LANZAMIENTO] Sincronización Opcional Cifrada (E2E)**: Investigar un método seguro para que los usuarios puedan sincronizar sus datos cifrados entre dispositivos, manteniendo siempre el principio de "conocimiento cero".
 
-### **Contribution Guidelines:**
-- ✅ **Clinical changes**: Cite sources (e.g., Beck 1979, Burns 1980)
-- ✅ **Code changes**: Add TypeScript types, write unit tests
-- ✅ **UI changes**: Ensure WCAG 2.1 AA compliance
-- ✅ **Docs changes**: Use clear, jargon-free language
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
-
----
-
-## 🗺️ Roadmap
-
-### **v1.1 (Q2 2025)**
-- [ ] **Therapist Export**: PDF reports with ICC graphs for clinical sharing
-- [ ] **Accessibility Audit**: Full WCAG 2.1 AA compliance
-- [ ] **Portuguese Translation**: Full i18n support
-- [ ] **Onboarding Tour**: Interactive guide for first-time users (Post-vault setup)
-
-### **v1.2 (Q3 2025)**
-- [ ] **Predictive Patterns**: Local ML model (TensorFlow.js) for early warning
-- [ ] **Advanced Graphing**: Custom date ranges, emotion correlation matrices
-- [ ] **Wearable Import**: Manual CSV import from Fitbit/Apple Watch heart rate data
-- [ ] **Medication Tracker**: Optional log for psych meds (timestamps only, no dosage)
-
-### **v2.0 (Future)**
-- [ ] **Optional E2E Encrypted Sync**: Self-hosted server option (ownCloud/Nextcloud)
-- [ ] **Collaborative Mode**: Share anonymized data with therapist (consent-based)
-- [ ] **Research Participation**: Opt-in to contribute to CBT efficacy studies
-
-### **Community Wishlist**
-Vote on features at [GitHub Discussions](https://github.com/[your-username]/cognit-lambda/discussions)
 
 ---
 
@@ -571,5 +509,3 @@ See [LICENSE](./LICENSE) for full text.
 <p align="center">
   <sub>If this tool helped you, consider sharing it with someone who might need it. ❤️</sub>
 </p>
-
-    

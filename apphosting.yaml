@@ -1,14 +1,9 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
-
-runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
-
-# Optional, but recommended for production workloads.
-# You can use a different instance size, or leave this blank to use the default.
-# https://firebase.google.com/docs/app-hosting/pricing#instance-sizes
-resources:
-  cpu: 0.5
-  memoryMiB: 1024
+# Este archivo está intencionadamente casi vacío para forzar un despliegue estático
+# y evitar los pipelines de build complejos de Firebase App Hosting.
+# La configuración de despliegue se gestiona en firebase.json.
+run:
+  # No se especifica un 'build' ni un 'start' para que se sirva contenido estático.
+  # La propiedad 'public' en firebase.json se encargará del resto.
+  cpu: 0.1
+  memoryMiB: 128
+  concurrency: 1
