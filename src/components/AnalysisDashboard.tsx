@@ -1,17 +1,19 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Lightbulb } from 'lucide-react';
-import { BarChart, PieChart, LineChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Pie, Cell, Line } from 'recharts';
+import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Lightbulb, Star, Trophy } from 'lucide-react';
+import { BarChart, PieChart, LineChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Pie, Cell, Line, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import type { JournalStats, JournalAnalysis } from '@/hooks/use-cbt-journal';
 import { MIN_SESSIONS_FOR_ANALYSIS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { ThoughtEntry } from '@/types';
 import { useTranslation } from '@/hooks/use-translation.tsx';
+import { Progress } from '@/components/ui/progress';
 
 interface AnalysisDashboardProps {
   analysis: JournalAnalysis;
@@ -38,6 +40,7 @@ const CustomTooltip = ({ active, payload, label, t }: any) => {
 
 const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, entries }) => {
   const { t } = useTranslation();
+  entries = entries || []; // Ensure entries is always an array
   const [comparisonDays, setComparisonDays] = useState('7');
   const [comparisonResult, setComparisonResult] = useState<any>(null);
   const [patterns, setPatterns] = useState<any[] | null>(null);
@@ -67,6 +70,8 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
       intensity: e.intensity,
       emotion: e.emotion,
   }));
+  
+  const goalProgress = stats.totalGoals > 0 ? (stats.completedGoals / stats.totalGoals) * 100 : 0;
 
   const handleCompare = () => {
     const result = analysis.compareLastDays(parseInt(comparisonDays));
@@ -86,6 +91,11 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
     }
   }
 
+  const pleasureMasteryData = [
+    { subject: t('activation_pleasure_label_short'), value: analysis.pleasureMasteryBalance.avgPleasure, fullMark: 10 },
+    { subject: t('activation_mastery_label_short'), value: analysis.pleasureMasteryBalance.avgMastery, fullMark: 10 },
+  ];
+
   return (
     <div className="space-y-6">
         <Card className="bg-primary/5 border-primary/20">
@@ -101,6 +111,50 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
                 )}
             </CardContent>
         </Card>
+
+      {/* Goal Progress */}
+      {stats.totalGoals > 0 && (
+         <Card>
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Target />{t('analysis_goals_title')}</CardTitle>
+              <CardDescription>{t('analysis_goals_desc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">{t('analysis_goals_completed')}</span>
+                  <span className="font-bold">{stats.completedGoals} / {stats.totalGoals}</span>
+              </div>
+              <Progress value={goalProgress} className="h-2" />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pleasure/Mastery Balance */}
+      {analysis.pleasureMasteryBalance.totalActivities > 0 && (
+          <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Zap/>{t('pleasure_mastery_balance_title')}</CardTitle>
+                  <CardDescription>{t('pleasure_mastery_balance_desc')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={pleasureMasteryData}>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="subject" />
+                          <PolarRadiusAxis angle={30} domain={[0, 10]} />
+                          <Radar name="Balance" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} />
+                          <Tooltip />
+                      </RadarChart>
+                  </ResponsiveContainer>
+                  {analysis.pleasureMasteryBalance.insight && (
+                      <div className="mt-4 rounded-lg border border-primary bg-primary/10 p-3 text-sm">
+                          <p>{analysis.pleasureMasteryBalance.insight}</p>
+                      </div>
+                  )}
+              </CardContent>
+          </Card>
+      )}
+
 
        {/* Comparison */}
       <Card>
@@ -156,7 +210,7 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
             <CardDescription>{t('pattern_analysis_desc', { min: MIN_SESSIONS_FOR_ANALYSIS, current: stats.total })}</CardDescription>
         </CardHeader>
         <CardContent>
-            <Button onClick={handleDetectPatterns} className="w-full mb-4" disabled={stats.total < 5}>{t('analyze_patterns_button')}</Button>
+            <Button onClick={handleDetectPatterns} className="w-full mb-4" disabled={stats.total < MIN_SESSIONS_FOR_ANALYSIS}>{t('analyze_patterns_button')}</Button>
              {patterns && (
                 <ul className="space-y-2">
                   {patterns.length > 0 ? patterns.map((p, i) => (
@@ -324,3 +378,5 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
 };
 
 export default AnalysisDashboard;
+
+    

@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DialogContent,
   DialogHeader,
@@ -17,12 +16,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { CrisisConfig } from '@/hooks/use-cbt-journal';
 import type { CrisisContact } from '@/types';
-import { Trash2, KeyRound } from 'lucide-react';
+import { Trash2, KeyRound, Palette, Check } from 'lucide-react';
 import BreathingGuide from '../BreathingGuide';
 import { useTranslation } from '@/hooks/use-translation.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useVault } from '@/context/vault/VaultProvider';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { Separator } from '../ui/separator';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { arrayBufferToBase64 } from '@/lib/arraybuffer-utils';
+import pako from 'pako';
 
 interface SettingsModalProps {
     crisisConfig: CrisisConfig;
@@ -30,22 +33,132 @@ interface SettingsModalProps {
     lastPrompt: string;
 }
 
+const ChangePasswordForm: React.FC = () => {
+    const { t } = useTranslation();
+    const { toast } = useToast();
+    const { changePassword } = useVault();
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        setError('');
+        if (newPassword.length < 6) {
+            setError(t('change_password_error_length'));
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError(t('change_password_error_mismatch'));
+            return;
+        }
+
+        setLoading(true);
+        const success = await changePassword(currentPassword, newPassword);
+        setLoading(false);
+
+        if (success) {
+            toast({ title: t('change_password_success_title') });
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } else {
+            setError(t('change_password_error_current'));
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <h3 className="font-semibold flex items-center gap-2"><KeyRound className="w-4 h-4"/>{t('change_password_title')}</h3>
+            <div className="space-y-2">
+                <Label htmlFor="currentPassword">{t('change_password_current_label')}</Label>
+                <Input id="currentPassword" type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="newPassword">{t('change_password_new_label')}</Label>
+                <Input id="newPassword" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="confirmPassword">{t('change_password_confirm_label')}</Label>
+                <Input id="confirmPassword" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button onClick={handleSubmit} disabled={loading} className="w-full">
+                {loading ? t('change_password_loading') : t('change_password_button')}
+            </Button>
+        </div>
+    )
+}
+
+const themes = [
+    { name: 'default', label: 'Default', colorLight: 'hsl(210 40% 96.1%)', colorDark: 'hsl(217.2 32.6% 17.5%)' },
+    { name: 'zen', label: 'Zen', colorLight: 'hsl(142 76% 36%)', colorDark: 'hsl(142 71% 45%)' },
+    { name: 'sunrise', label: 'Sunrise', colorLight: 'hsl(24 95% 53%)', colorDark: 'hsl(38 92% 50%)' },
+];
+
+const ThemeSelector: React.FC = () => {
+    const { t } = useTranslation();
+    const { theme, setTheme, systemTheme } = useTheme();
+    const [activeTheme, setActiveTheme] = useState('default');
+
+    React.useEffect(() => {
+        const currentThemeClass = Array.from(document.documentElement.classList).find(c => c.startsWith('theme-'));
+        if (currentThemeClass) {
+            setActiveTheme(currentThemeClass.replace('theme-', ''));
+        } else {
+            setActiveTheme('default');
+        }
+    }, []);
+
+    const handleThemeChange = (newThemeName: string) => {
+        themes.forEach(t => {
+            if (t.name !== 'default') {
+                document.documentElement.classList.remove(`theme-${t.name}`);
+            }
+        });
+        
+        if (newThemeName !== 'default') {
+            document.documentElement.classList.add(`theme-${newThemeName}`);
+        }
+        
+        setActiveTheme(newThemeName);
+    }
+
+    const currentMode = theme === 'system' ? systemTheme : theme;
+
+    return (
+        <div className="space-y-2">
+            <h3 className="font-semibold flex items-center gap-2"><Palette className="w-4 h-4" />{t('settings_appearance_title')}</h3>
+            <Label>{t('settings_theme_label')}</Label>
+            <div className="flex gap-3">
+                {themes.map((tInfo) => (
+                    <button
+                        key={tInfo.name}
+                        className={cn(
+                            "h-8 w-8 rounded-full border-2 transition-all flex items-center justify-center",
+                            activeTheme === tInfo.name ? 'border-ring' : 'border-transparent'
+                        )}
+                        style={{ backgroundColor: currentMode === 'dark' ? tInfo.colorDark : tInfo.colorLight }}
+                        onClick={() => handleThemeChange(tInfo.name)}
+                        aria-label={`${t('settings_select_theme_aria')} ${tInfo.label}`}
+                    >
+                        {activeTheme === tInfo.name && <Check className="h-5 w-5 text-white mix-blend-difference" />}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ crisisConfig, updateCrisisConfig, lastPrompt }) => {
     const { t, locale, setLocale } = useTranslation();
-    const { changePassword } = useVault();
     const { toast } = useToast();
     const [copingPhrase, setCopingPhrase] = useState(crisisConfig.copingPhrase);
     const [contacts, setContacts] = useState<CrisisContact[]>(crisisConfig.contacts);
     const [newContactName, setNewContactName] = useState('');
     const [newContactPhone, setNewContactPhone] = useState('');
     const [showBreathingGuide, setShowBreathingGuide] = useState(false);
-    
-    // State for changing password
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
 
     const handleSave = () => {
         updateCrisisConfig({ copingPhrase, contacts });
@@ -71,41 +184,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ crisisConfig, updateCrisi
         setContacts(contacts.filter(c => c.id !== id));
     };
 
-    const handleChangePassword = async () => {
-        if (newPassword.length < 6) {
-            toast({ title: "Contraseña muy corta", description: "La nueva contraseña debe tener al menos 6 caracteres.", variant: 'destructive'});
-            return;
-        }
-        if (newPassword !== confirmNewPassword) {
-            toast({ title: "Las contraseñas no coinciden", description: "La nueva contraseña y la confirmación no son iguales.", variant: 'destructive'});
-            return;
-        }
-        
-        setIsChangingPassword(true);
-        try {
-            const success = await changePassword(currentPassword, newPassword);
-            if (success) {
-                toast({ title: "Contraseña cambiada con éxito" });
-                setCurrentPassword('');
-                setNewPassword('');
-                setConfirmNewPassword('');
-            } else {
-                toast({ title: "Error", description: "La contraseña actual es incorrecta.", variant: 'destructive' });
-            }
-        } catch (error) {
-            toast({ title: "Error", description: (error as Error).message, variant: 'destructive' });
-        } finally {
-            setIsChangingPassword(false);
-        }
-    };
-
-  if (showBreathingGuide) {
-    return (
-        <DialogContent className="max-w-lg">
-            <BreathingGuide onStop={() => setShowBreathingGuide(false)} />
-        </DialogContent>
-    );
-  }
+    if (showBreathingGuide) {
+        return (
+            <DialogContent className="max-w-lg">
+                <BreathingGuide onStop={() => setShowBreathingGuide(false)} />
+            </DialogContent>
+        );
+    }
 
   return (
     <DialogContent className="max-w-lg">
@@ -117,31 +202,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ crisisConfig, updateCrisi
       </DialogHeader>
       <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto pr-4">
         
-        <Accordion type="single" collapsible>
-            <AccordionItem value="password">
-                <AccordionTrigger>
-                    <h3 className="font-semibold flex items-center gap-2"><KeyRound /> Cambiar Contraseña</h3>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <div className="space-y-4 pt-4">
-                         <div className="space-y-2">
-                            <Label htmlFor="currentPassword">Contraseña Actual</Label>
-                            <Input id="currentPassword" type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="newPassword">Nueva Contraseña (mín. 6 caracteres)</Label>
-                            <Input id="newPassword" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="confirmNewPassword">Confirmar Nueva Contraseña</Label>
-                            <Input id="confirmNewPassword" type="password" value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} />
-                        </div>
-                        <Button onClick={handleChangePassword} disabled={isChangingPassword}>{isChangingPassword ? "Cambiando..." : "Confirmar Cambio"}</Button>
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+        <ThemeSelector />
 
+        <Separator />
+        
         <div className="space-y-2">
             <h3 className="font-semibold">{t('settings_language_title')}</h3>
             <Label htmlFor="language-select">{t('settings_language_label')}</Label>
@@ -156,6 +220,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ crisisConfig, updateCrisi
             </Select>
         </div>
 
+        <Separator />
+        
+        <ChangePasswordForm />
+
+        <Separator />
+
         <div className="space-y-2">
             <h3 className="font-semibold">{t('settings_daily_reminder_title')}</h3>
              <Label htmlFor="notificationTime">{t('settings_daily_reminder_time')}</Label>
@@ -164,6 +234,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ crisisConfig, updateCrisi
              <div className="text-sm italic text-muted-foreground p-3 bg-muted rounded-md">{lastPrompt || t('settings_no_recent_prompt')}</div>
              <p className="text-xs text-warning">{t('settings_notification_warning')}</p>
         </div>
+        
+        <Separator />
 
         <div className="space-y-4">
             <h3 className="font-semibold">{t('settings_crisis_plan_title')}</h3>

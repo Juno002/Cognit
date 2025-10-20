@@ -6,10 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { ThoughtEntry, ThoughtEntryFormData } from '@/types';
-import { List, Trash2, ChevronsDown, ArrowRight, Link as LinkIcon } from 'lucide-react';
+import { List, Trash2, ChevronsDown, ArrowRight, Link as LinkIcon, Target } from 'lucide-react';
 import { formatDate, calculateICC } from '@/lib/utils';
 import { NegativeStreakAlert } from './NegativeStreakAlert';
 import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useCbtJournal } from '@/hooks/use-cbt-journal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 interface ThoughtListProps {
   entries: ThoughtEntry[];
@@ -23,9 +26,12 @@ interface ThoughtListProps {
 
 const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void; onMoveToL3: (data: Partial<ThoughtEntryFormData>) => void; }> = ({ entry, onDelete, onMoveToL3 }) => {
     const { t, locale } = useTranslation();
+    const { goals } = useCbtJournal();
     const levelEmoji = entry.level === 1 ? '💙' : entry.level === 2 ? '💜' : '💛';
     const iccScore = calculateICC(entry.originalIntensity, entry.finalCredibility);
     
+    const linkedGoal = entry.linkedGoalId ? goals.find(g => g.id === entry.linkedGoalId) : null;
+
     const handleMoveToL3 = () => {
         onMoveToL3({
             date: entry.date,
@@ -47,9 +53,25 @@ const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void;
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={entry.__draft ? 'destructive' : 'secondary'}>{levelEmoji} L{entry.level}{entry.__draft ? ` (${t('draft_label')})` : ''}</Badge>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(entry.id)}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={t('delete_entry_aria_label')}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t('delete_entry_confirm_title')}</AlertDialogTitle>
+                            <AlertDialogDescription>{t('delete_entry_confirm_desc')}</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDelete(entry.id)} className="bg-destructive hover:bg-destructive/90">
+                                {t('delete_button')}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </CardHeader>
             <CardContent>
@@ -76,13 +98,19 @@ const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void;
                         </p>
                     </div>
                 )}
+                
+                <div className="flex flex-wrap gap-2 mt-4">
+                    {entry.tags && entry.tags.length > 0 && (
+                        entry.tags.map(tag => <Badge key={tag} variant="outline">#{tag}</Badge>)
+                    )}
+                    {linkedGoal && (
+                        <Badge variant="default" className="bg-amber-500 hover:bg-amber-600">
+                           <Target className="mr-1 h-3 w-3" />
+                           {linkedGoal.title}
+                        </Badge>
+                    )}
+                </div>
 
-
-                {entry.tags && entry.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {entry.tags.map(tag => <Badge key={tag} variant="outline">#{tag}</Badge>)}
-                    </div>
-                )}
             </CardContent>
              {entry.level === 1 && entry.intensity >= 7 && (
                 <CardFooter>

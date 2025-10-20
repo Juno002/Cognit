@@ -2,13 +2,13 @@
 "use client";
 
 import type { ThoughtEntry } from '@/types';
-import type { JournalStats } from '@/hooks/use-cbt-journal';
+import type { JournalStats, JournalAnalysis } from '@/hooks/use-cbt-journal';
 import { calculateICC, escapeHtml } from './utils';
 import type { TFunction } from '@/hooks/use-translation';
 
-const generateInsightText = (stats: JournalStats, rows: ThoughtEntry[], t: TFunction): string => {
-    if (stats.total < 5) return t('report_insufficient_data');
-    return t('report_insight_text', { emotion: stats.topEmotion, level: stats.predominantLevel });
+const generateInsightText = (analysis: JournalAnalysis, t: TFunction): string => {
+    if (analysis.insight) return analysis.insight;
+    return t('report_insufficient_data');
 }
 
 const safeCsv = (value: any): string => {
@@ -45,8 +45,8 @@ export const generateCsvContent = (rows: ThoughtEntry[]): string => {
 }
 
 
-export const generateReportContent = (rows: ThoughtEntry[], stats: JournalStats, t: TFunction): string => {
-    const insightText = generateInsightText(stats, rows, t);
+export const generateReportContent = (rows: ThoughtEntry[], stats: JournalStats, analysis: JournalAnalysis, t: TFunction): string => {
+    const insightText = generateInsightText(analysis, t);
 
     const iccMetric = stats.avgICC
         ? `* **${t('report_avg_icc_title')}:** ${stats.avgICC} (${t('report_avg_icc_desc')}).\n`
@@ -65,6 +65,31 @@ export const generateReportContent = (rows: ThoughtEntry[], stats: JournalStats,
     reportContent += `* **${t('report_top_emotion')}:** ${escapeHtml(stats.topEmotion)} (${t('report_top_emotion_desc')})\n`;
     reportContent += iccMetric;
     reportContent += `\n`;
+
+    // --- New Analysis Sections ---
+
+    if (analysis.iccByEmotion.length > 0) {
+        reportContent += `### ${t('icc_by_emotion_title')}\n\n`;
+        reportContent += `| ${t('emotion_label')} | ${t('report_avg_icc_title')} | ${t('report_l3_sessions')} |\n`;
+        reportContent += `| :--- | :--- | :--- |\n`;
+        analysis.iccByEmotion.forEach(item => {
+            reportContent += `| ${escapeHtml(item.emotion)} | **${item.avgICC}** | ${item.count} |\n`;
+        });
+        reportContent += `\n`;
+    }
+
+    if (analysis.triggers.length > 0) {
+        reportContent += `### ${t('main_triggers_title')}\n\n`;
+        reportContent += `| ${t('report_table_trigger')} | ${t('report_table_frequency')} | ${t('report_avg_intensity')} |\n`;
+        reportContent += `| :--- | :--- | :--- |\n`;
+        analysis.triggers.forEach(trigger => {
+            reportContent += `| ${escapeHtml(trigger.situation)} | ${trigger.count} | ${trigger.avgIntensity}/10 |\n`;
+        });
+        reportContent += `\n`;
+    }
+
+    // --- End of New Analysis Sections ---
+
 
     reportContent += `## II. ${t('report_distribution_title')}\n\n`;
     reportContent += `### ${t('report_level_distribution_title')}\n`;
@@ -222,3 +247,6 @@ export const generateFhirObservation = (entries: ThoughtEntry[], stats: JournalS
     ],
   };
 };
+
+
+    

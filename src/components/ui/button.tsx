@@ -20,10 +20,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-11 px-4 py-2",
+        sm: "h-10 rounded-md px-3",
+        lg: "h-12 rounded-md px-8",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {
@@ -45,6 +45,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     const createRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
       const button = event.currentTarget;
+      button.classList.add('ripple-effect');
+
+      const existingRipple = button.getElementsByClassName("ripple")[0];
+      if (existingRipple) {
+        existingRipple.remove();
+      }
+
       const circle = document.createElement("span");
       const diameter = Math.max(button.clientWidth, button.clientHeight);
       const radius = diameter / 2;
@@ -55,17 +62,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       circle.style.top = `${event.clientY - rect.top - radius}px`;
       circle.classList.add("ripple");
       
-      const ripple = button.getElementsByClassName("ripple")[0];
-      if (ripple) {
-        ripple.remove();
-      }
-      
       button.appendChild(circle);
     };
     
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }), 'ripple-effect')}
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         onClick={(e) => {
           createRipple(e);

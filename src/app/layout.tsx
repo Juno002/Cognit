@@ -1,11 +1,15 @@
 
-import type { Metadata, Viewport } from 'next';
+"use client";
+
+import type { Metadata } from 'next';
 import './globals.css';
 import { Poppins } from 'next/font/google';
 import { TranslationProvider } from '@/hooks/use-translation.tsx';
-import AppLayout from '@/components/AppLayout';
-import RegisterSW from '@/components/RegisterSW';
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { VaultProvider } from '@/context/vault/VaultProvider';
+import { Toaster } from "@/components/ui/toaster";
+import { PWAInstallBanner } from '@/components/pwa-install-banner';
+import { OnlineIndicator } from '@/components/online-indicator';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -13,36 +17,6 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
-export const metadata: Metadata = {
-  title: 'Cognit λ',
-  description: 'Open-source CBT & ERP Journal App, 100% private and offline-first.',
-  manifest: '/manifest.json',
-  applicationName: 'Cognit λ',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Cognit λ',
-  },
-  icons: {
-    shortcut: '/favicon.ico',
-    icon: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/apple-touch-icon.png', type: 'image/png' },
-      { url: '/icons/apple-touch-icon-180x180.png', sizes: '180x180', type: 'image/png' },
-    ],
-  }
-};
-
-export const viewport: Viewport = {
-  themeColor: '#111a24',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 export default function RootLayout({
   children,
@@ -51,12 +25,33 @@ export default function RootLayout({
 }>) {
   return (
     <TranslationProvider>
-      <VaultProvider>
-        <AppLayout poppinsClassName={`${poppins.variable} font-body antialiased`}>
-          <RegisterSW />
-          {children}
-        </AppLayout>
-      </VaultProvider>
+      <html lang="es" suppressHydrationWarning>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <meta name="theme-color" content="#3B82F6" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        </head>
+        <body className={`${poppins.variable} font-body antialiased`}>
+          <NextThemesProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+          >
+            <VaultProvider>
+              {children}
+              <PWAInstallBanner />
+              <OnlineIndicator />
+              <Toaster />
+            </VaultProvider>
+          </NextThemesProvider>
+        </body>
+      </html>
     </TranslationProvider>
   );
 }

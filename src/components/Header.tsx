@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { BrainCircuit, Sun, Moon, HelpCircle, Download, Upload, Trash2, Settings, FileText, FileJson, FileSpreadsheet, Zap, CheckCircle, AlertCircle, HeartPulse } from 'lucide-react';
+import { Sun, Moon, HelpCircle, Download, Upload, Trash2, Settings, FileText, FileJson, FileSpreadsheet, Zap, CheckCircle, AlertCircle, HeartPulse, Printer, MoreVertical, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -24,13 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
-import HelpModal from './modals/HelpModal';
-import SettingsModal from './modals/SettingsModal';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import HelpModal from '@/components/modals/HelpModal';
+import SettingsModal from '@/components/modals/SettingsModal';
 import type { CrisisConfig } from '@/hooks/use-cbt-journal';
-import { Badge } from './ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
+
 
 interface HeaderProps {
     dbStatus: 'ok' | 'error' | 'loading';
@@ -43,13 +45,15 @@ interface HeaderProps {
     onExportL3Report: () => void;
     onAutoZip: () => void;
     onExportFhir: () => void;
+    onPrintReport: () => void;
     isZipping: boolean;
     crisisConfig: CrisisConfig;
     updateCrisisConfig: (config: Partial<CrisisConfig>) => void;
     lastPrompt: string;
+    onNavigate: (tab: 'analysis') => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, isZipping, crisisConfig, updateCrisisConfig, lastPrompt }) => {
+const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, onPrintReport, isZipping, crisisConfig, updateCrisisConfig, lastPrompt, onNavigate }) => {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
@@ -67,35 +71,24 @@ const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, 
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-auto min-h-16 flex-col items-center justify-between gap-2 py-2 md:flex-row md:h-16">
-        <div className="flex items-center gap-3">
-           <div className={cn("relative h-8 w-8", isSaving && "animate-pulse")}>
-            <BrainCircuit className={cn("h-8 w-8 text-primary transition-all", isSaving && "scale-110")}/>
-             {isSaving && <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping"></div>}
-          </div>
-          <div className="text-center md:text-left">
+      <div className="container mx-auto flex h-16 items-center justify-between gap-2 px-2 md:px-4">
+        <div className="flex items-center gap-2">
+          <span className={cn("text-3xl text-primary transition-all duration-200 hover:scale-110", isSaving && "scale-110 animate-pulse")} role="img" aria-label="Lambda">λ</span>
+          <div className="text-left">
             <h1 className="text-lg font-bold tracking-tight sm:text-xl">
-              Cognit λ
+              Cognit
             </h1>
             <p className="text-xs text-muted-foreground">{t('header_tagline')}</p>
           </div>
-          {dbStatus === 'ok' && (
-            <Badge variant="outline" className="hidden md:flex items-center gap-1 border-green-500/50 text-green-600">
-                <CheckCircle className="h-3 w-3" /> {t('header_db_ready')}
-            </Badge>
-          )}
-          {dbStatus === 'error' && (
-            <Badge variant="destructive" className="hidden md:flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> {t('header_db_error')}
-            </Badge>
-          )}
         </div>
-        <div className="flex w-full flex-wrap items-center justify-center gap-1 md:w-auto md:flex-nowrap md:gap-2">
+        <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" aria-label={t('tab_analysis')} className="h-9 px-2" onClick={() => onNavigate('analysis')} data-tour="analysis-tab-button">
+                <BarChart2 className="h-5 w-5"/>
+            </Button>
             <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
                 <DialogTrigger asChild>
-                     <Button variant="ghost" size="sm" aria-label={t('header_help_aria')} className="h-8 px-2 sm:h-9 sm:px-3">
-                        <HelpCircle className="h-5 w-5 md:mr-1"/>
-                        <span className="hidden md:inline">{t('header_help')}</span>
+                     <Button variant="ghost" size="sm" aria-label={t('header_help_aria')} className="h-9 px-2">
+                        <HelpCircle className="h-5 w-5"/>
                     </Button>
                 </DialogTrigger>
                 <HelpModal />
@@ -103,9 +96,8 @@ const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, 
 
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
-                     <Button variant="ghost" size="sm" aria-label={t('header_settings_aria')} className="h-8 px-2 sm:h-9 sm:px-3">
-                        <Settings className="h-5 w-5 md:mr-1"/>
-                        <span className="hidden md:inline">{t('header_settings')}</span>
+                     <Button variant="ghost" size="sm" aria-label={t('header_settings_aria')} className="h-9 px-2">
+                        <Settings className="h-5 w-5"/>
                     </Button>
                 </DialogTrigger>
                 <SettingsModal 
@@ -114,50 +106,84 @@ const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, 
                     lastPrompt={lastPrompt}
                 />
             </Dialog>
-            
-            <Button variant="outline" size="sm" onClick={onExportL3Report} className="h-8 px-2 sm:h-9 sm:px-3">
-                <span className="mr-1">✨</span> L3
-            </Button>
-            
-            <Button variant="secondary" size="sm" onClick={onAutoZip} disabled={isZipping} className="h-8 px-2 sm:h-9 sm:px-3">
-                <Zap className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">{isZipping ? t('header_zipping') : t('header_autozip')}</span>
-            </Button>
 
-             <DropdownMenu>
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 px-2 sm:h-9 sm:px-3">
-                        <Download className="h-4 w-4 md:mr-2" />
-                        <span className="hidden md:inline">{t('header_export')}</span>
+                    <Button variant="ghost" size="sm" className="h-9 px-2">
+                        <MoreVertical className="h-5 w-5" />
+                        <span className="sr-only">More options</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuLabel>{t('header_export_data')}</DropdownMenuLabel>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuGroup>
+                        <DropdownMenuLabel>{t('header_export_data')}</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={onAutoZip} disabled={isZipping} data-tour="autozip-button">
+                            <Zap className="mr-2 h-4 w-4" />
+                            <span>{isZipping ? t('header_zipping') : t('header_autozip')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={onExportL3Report}>
+                            <span className="mr-2 h-4 w-4">✨</span>
+                            <span>{t('l3_report_title')}</span>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem onClick={onPrintReport}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            <span>{t('header_export_pdf')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={onExportReport}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span>{t('header_export_report')}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onExportReport}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        <span>{t('header_export_report')}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onExportJson}>
-                        <FileJson className="mr-2 h-4 w-4" />
-                        <span>{t('header_export_json')}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onExportCsv}>
-                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                        <span>{t('header_export_csv')}</span>
-                    </DropdownMenuItem>
-                     <DropdownMenuSeparator />
-                     <DropdownMenuItem onClick={onExportFhir}>
-                        <HeartPulse className="mr-2 h-4 w-4" />
-                        <span>{t('header_export_fhir')}</span>
-                    </DropdownMenuItem>
+                     <DropdownMenuGroup>
+                        <DropdownMenuLabel>Gestión de Datos</DropdownMenuLabel>
+                         <DropdownMenuItem onClick={() => importInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            <span>{t('header_import')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={onExportJson}>
+                            <FileJson className="mr-2 h-4 w-4" />
+                            <span>{t('header_export_json')}</span>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem onClick={onExportCsv}>
+                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            <span>{t('header_export_csv')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={onExportFhir}>
+                            <HeartPulse className="mr-2 h-4 w-4" />
+                            <span>{t('header_export_fhir')}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                     <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={toggleTheme}>
+                             {theme === 'dark' ? <Sun className="mr-2 h-4 w-4"/> : <Moon className="mr-2 h-4 w-4"/>}
+                             <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                        </DropdownMenuItem>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>{t('header_reset')}...</span>
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>{t('reset_dialog_title')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t('reset_dialog_desc')}</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={onReset} className="bg-destructive hover:bg-destructive/90">
+                                    {t('reset_dialog_confirm')}
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </DropdownMenuGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="outline" size="sm" onClick={() => importInputRef.current?.click()} className="h-8 px-2 sm:h-9 sm:px-3">
-                <Upload className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">{t('header_import')}</span>
-            </Button>
             <input
                 type="file"
                 ref={importInputRef}
@@ -165,36 +191,6 @@ const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, 
                 accept=".json"
                 onChange={onImport}
             />
-
-            {isMounted && (
-              <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={t('header_toggle_theme_aria')} className="h-8 w-8 sm:h-9 sm:w-9">
-                {theme === 'dark' ? <Sun className="h-5 w-5"/> : <Moon className="h-5 w-5"/>}
-                <span className="sr-only">{t('header_toggle_theme_aria')}</span>
-              </Button>
-            )}
-            
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-9 sm:w-9" aria-label={t('header_reset_aria')}>
-                        <Trash2 className="h-5 w-5"/>
-                        <span className="sr-only">{t('header_reset')}</span>
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>{t('reset_dialog_title')}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {t('reset_dialog_desc')}
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                    <AlertDialogAction onClick={onReset} className="bg-destructive hover:bg-destructive/90">
-                        {t('reset_dialog_confirm')}
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
       </div>
     </header>
