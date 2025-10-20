@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,10 +16,14 @@ export function PWAInstallBanner() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
-    if (isInstalled) return;
+    if (isInstalled) {
+      return;
+    }
 
     const handler = (e: Event) => {
       e.preventDefault();

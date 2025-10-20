@@ -10,20 +10,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, Edit, X } from 'lucide-react';
+import { Trash2, Plus, Edit, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useToast } from '@/hooks/use-toast';
 
 interface ExposureModeProps {
     fearLadder: FearItem[];
@@ -83,6 +84,9 @@ const ExposureLogForm: React.FC<{
     const [finalAnxiety, setFinalAnxiety] = useState(30);
     const [durationMinutes, setDurationMinutes] = useState(15);
     const [notes, setNotes] = useState('');
+    const [catastrophicPrediction, setCatastrophicPrediction] = useState('');
+    const [realOutcome, setRealOutcome] = useState('');
+    const [safetyBehaviorsAvoided, setSafetyBehaviorsAvoided] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -92,6 +96,9 @@ const ExposureLogForm: React.FC<{
             finalAnxiety,
             durationMinutes,
             notes,
+            catastrophicPrediction,
+            realOutcome,
+            safetyBehaviorsAvoided
         });
         onClose();
     };
@@ -112,10 +119,37 @@ const ExposureLogForm: React.FC<{
                 <Slider value={[durationMinutes]} onValueChange
                 ={([val]) => setDurationMinutes(val)} min={5} max={120} step={5} />
             </div>
-            <div>
+             <div>
                 <Label htmlFor="log-notes">{t('notes_label')}</Label>
                 <Textarea id="log-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes_placeholder')} />
             </div>
+
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger>
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-warning" />
+                        {t('erp_advanced_section_title')}
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4">
+                    <div>
+                        <Label htmlFor="catastrophic-prediction">{t('erp_catastrophic_prediction_label')}</Label>
+                        <Textarea id="catastrophic-prediction" value={catastrophicPrediction} onChange={e => setCatastrophicPrediction(e.target.value)} placeholder={t('erp_catastrophic_prediction_placeholder')} />
+                    </div>
+                    <div>
+                        <Label htmlFor="real-outcome">{t('erp_real_outcome_label')}</Label>
+                        <Textarea id="real-outcome" value={realOutcome} onChange={e => setRealOutcome(e.target.value)} placeholder={t('erp_real_outcome_placeholder')} />
+                    </div>
+                     <div>
+                        <Label htmlFor="safety-behaviors">{t('erp_safety_behaviors_label')}</Label>
+                        <Textarea id="safety-behaviors" value={safetyBehaviorsAvoided} onChange={e => setSafetyBehaviorsAvoided(e.target.value)} placeholder={t('erp_safety_behaviors_placeholder')} />
+                    </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+
             <DialogFooter>
                 <DialogClose asChild>
                     <Button type="button" variant="ghost">{t('cancel')}</Button>
@@ -135,10 +169,15 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
     onAddLog
 }) => {
     const { t, locale } = useTranslation();
+    const { toast } = useToast();
     const [isFearFormOpen, setIsFearFormOpen] = useState(false);
     const [isLogFormOpen, setIsLogFormOpen] = useState<FearItem | null>(null);
     const [editingFearItem, setEditingFearItem] = useState<FearItem | undefined>(undefined);
     const dateLocale = locale === 'es' ? es : enUS;
+
+    const sortedFearLadder = useMemo(() => {
+        return [...fearLadder].sort((a, b) => a.rating - b.rating);
+    }, [fearLadder]);
 
     const progressData = useMemo(() => {
         if (logs.length === 0) return [];
@@ -149,7 +188,7 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
             if (!fearItem) return;
             
             if (!dataByItem[log.fearItemId]) {
-                dataByItem[log.fearItemId] = { name: fearItem.description, data: [] };
+                dataByItem[log.fearItemId] = { name: fearItem.description.substring(0, 20) + (fearItem.description.length > 20 ? '...' : ''), data: [] };
             }
             dataByItem[log.fearItemId].data.push({
                 date: format(new Date(log.date), 'dd MMM', { locale: dateLocale }),
@@ -157,15 +196,14 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
             });
         });
 
-        // For simplicity, we'll just chart the first few items with logs
-        return Object.values(dataByItem).slice(0, 3).map(item => ({
+        return Object.values(dataByItem).map(item => ({
             name: item.name,
             data: item.data.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         }));
 
     }, [logs, fearLadder, dateLocale]);
 
-    const colors = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))'];
+    const colors = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--icc-metric))', 'hsl(var(--destructive))'];
 
     return (
         <div className="grid lg:grid-cols-2 gap-6 items-start mt-6">
@@ -192,7 +230,7 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
                 </DialogContent>
             </Dialog>
             <Dialog open={!!isLogFormOpen} onOpenChange={(open) => !open && setIsLogFormOpen(null)}>
-                <DialogContent>
+                <DialogContent className="max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{t('log_exposure_session_title')}</DialogTitle>
                     </DialogHeader>
@@ -207,40 +245,42 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
                 </DialogContent>
             </Dialog>
 
-            <Card className="lg:col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>{t('fear_hierarchy_title')}</CardTitle>
-                        <CardDescription>{t('fear_hierarchy_desc')}</CardDescription>
-                    </div>
-                     <Button onClick={() => { setEditingFearItem(undefined); setIsFearFormOpen(true); }}>
-                        <Plus className="mr-2 h-4 w-4" /> {t('add_button')}
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                   <ul className="space-y-2">
-                        {fearLadder.length > 0 ? fearLadder.map(item => (
-                            <li key={item.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50">
-                                <Checkbox id={`fear-${item.id}`} checked={item.completed} onCheckedChange={(checked) => onUpdateFearItem({ ...item, completed: !!checked })} />
-                                <div className="flex-grow">
-                                    <label htmlFor={`fear-${item.id}`} className="font-medium">{item.description}</label>
-                                    <div className="w-full bg-muted rounded-full h-2.5 mt-1">
-                                        <div className="bg-destructive h-2.5 rounded-full" style={{ width: `${item.rating}%` }}></div>
+            <div className="lg:col-span-2 space-y-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{t('fear_hierarchy_title')}</CardTitle>
+                            <CardDescription>{t('fear_hierarchy_desc')}</CardDescription>
+                        </div>
+                         <Button onClick={() => { setEditingFearItem(undefined); setIsFearFormOpen(true); }} data-tour="add-fear-item-button">
+                            <Plus className="mr-2 h-4 w-4" /> {t('add_button')}
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                       <ul className="space-y-2">
+                            {sortedFearLadder.length > 0 ? sortedFearLadder.map(item => (
+                                <li key={item.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50">
+                                    <Checkbox id={`fear-${item.id}`} checked={item.completed} onCheckedChange={(checked) => onUpdateFearItem({ ...item, completed: !!checked })} />
+                                    <div className="flex-grow">
+                                        <label htmlFor={`fear-${item.id}`} className="font-medium">{item.description}</label>
+                                        <div className="w-full bg-muted rounded-full h-2.5 mt-1">
+                                            <div className="bg-destructive h-2.5 rounded-full" style={{ width: `${item.rating}%` }}></div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="w-12 text-right font-bold">{item.rating}</div>
-                                <Button size="sm" variant="outline" onClick={() => setIsLogFormOpen(item)}>{t('log_button')}</Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingFearItem(item); setIsFearFormOpen(true); }}><Edit className="h-4 w-4"/></Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDeleteFearItem(item.id)}><Trash2 className="h-4 w-4"/></Button>
-                            </li>
-                        )) : (
-                            <p className="text-center text-muted-foreground py-4">{t('add_first_fear_item_message')}</p>
-                        )}
-                   </ul>
-                </CardContent>
-            </Card>
+                                    <div className="w-12 text-right font-bold">{item.rating}</div>
+                                    <Button size="sm" variant="outline" onClick={() => setIsLogFormOpen(item)} data-tour="log-exposure-button">{t('log_button')}</Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingFearItem(item); setIsFearFormOpen(true); }}><Edit className="h-4 w-4"/></Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDeleteFearItem(item.id)}><Trash2 className="h-4 w-4"/></Button>
+                                </li>
+                            )) : (
+                                <p className="text-center text-muted-foreground py-4">{t('add_first_fear_item_message')}</p>
+                            )}
+                       </ul>
+                    </CardContent>
+                </Card>
+            </div>
 
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>{t('exposure_progress_title')}</CardTitle>
@@ -279,6 +319,16 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
                                     <p className="text-muted-foreground">{format(new Date(log.date), "d 'de' MMMM, yyyy", { locale: dateLocale })} - {t('minutes_short', {count: log.durationMinutes})}</p>
                                     <p>{t('anxiety_label_simple')}: <span className="font-bold">{log.initialAnxiety}</span> → <span className="font-bold text-success">{log.finalAnxiety}</span></p>
                                     {log.notes && <p className="mt-1 pt-1 border-t text-xs italic">{t('note_label')}: {log.notes}</p>}
+                                    
+                                    {log.catastrophicPrediction && log.realOutcome && (
+                                        <div className="mt-2 pt-2 border-t space-y-1 text-xs">
+                                            <p><strong>{t('erp_catastrophic_prediction_label_short')}:</strong> {log.catastrophicPrediction}</p>
+                                            <p className="text-green-600"><strong>{t('erp_real_outcome_label_short')}:</strong> {log.realOutcome}</p>
+                                        </div>
+                                    )}
+                                    {log.safetyBehaviorsAvoided && (
+                                         <p className="mt-2 pt-2 border-t text-xs"><strong>{t('erp_safety_behaviors_avoided_short')}:</strong> {log.safetyBehaviorsAvoided}</p>
+                                    )}
                                 </li>
                             )})}
                              {logs.length === 0 && <p className="text-center text-muted-foreground py-4">{t('no_logs_yet')}</p>}

@@ -1,11 +1,12 @@
 
 // src/components/auth/SetupVault.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useVault } from "@/context/vault/VaultProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
+import { Separator } from "../ui/separator";
 
 export const SetupVault: React.FC = () => {
   const { createVault } = useVault();
@@ -17,13 +18,17 @@ export const SetupVault: React.FC = () => {
 
   const submit = async () => {
     setError(null);
-    if (pass.length < 6) return setError("Usa al menos 6 caracteres (mejor: contraseña alfanumérica).");
-    if (pass !== pass2) return setError("Las contraseñas no coinciden.");
+    if (pass.length < 6) return setError(t('setup_vault_error_length'));
+    if (pass !== pass2) return setError(t('setup_vault_error_mismatch'));
     setLoading(true);
     try {
       await createVault(pass, { 
           cbtEntries: [],
           exposureState: { fearLadder: [], logs: [] },
+          activationState: { values: [], activities: [] },
+          goals: [],
+          gratitudeEntries: [],
+          sleepEntries: [],
           achievements: [],
           config: {
             crisisConfig: {
@@ -32,12 +37,17 @@ export const SetupVault: React.FC = () => {
             },
             lastPrompt: '',
             ruminationCount: 0,
-            tourCompleted: false,
+            tourState: {
+                journal: { seen: false },
+                activation: { seen: false },
+                goals: { seen: false },
+                exposure: { seen: false },
+                wellness: { seen: false },
+            }
           }
       });
-      // success will be handled by the provider re-rendering the main app
     } catch (e: any) {
-      setError(e.message || "Error creando la bóveda");
+      setError(e.message || t('setup_vault_error_generic'));
     } finally { 
       setLoading(false); 
     }
@@ -47,17 +57,17 @@ export const SetupVault: React.FC = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle>🔐 Protege tu Diario</CardTitle>
-                <CardDescription>Elige una contraseña o PIN para cifrar tus datos. Esta clave nunca sale de tu dispositivo.</CardDescription>
+                <CardTitle>{t('setup_vault_title')}</CardTitle>
+                <CardDescription>{t('setup_vault_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-sm font-bold text-destructive">⚠️ Si olvidas esta contraseña, tus datos serán irrecuperables.</p>
-                <Input type="password" placeholder="Contraseña o PIN (mín. 6 caracteres)" value={pass} onChange={e=>setPass(e.target.value)} />
-                <Input type="password" placeholder="Repite la contraseña" value={pass2} onChange={e=>setPass2(e.target.value)} />
+                <p className="text-sm font-bold text-destructive">{t('setup_vault_warning')}</p>
+                <Input type="password" placeholder={t('setup_vault_placeholder_pass')} value={pass} onChange={e=>setPass(e.target.value)} />
+                <Input type="password" placeholder={t('setup_vault_placeholder_confirm')} value={pass2} onChange={e=>setPass2(e.target.value)} />
                 {error && <div className="text-sm text-destructive">{error}</div>}
             </CardContent>
-            <CardFooter>
-                <Button className="w-full" onClick={submit} disabled={loading}>{loading ? "Creando..." : "Crear y Proteger"}</Button>
+            <CardFooter className="flex-col gap-4">
+                <Button className="w-full" onClick={submit} disabled={loading}>{loading ? t('setup_vault_loading_button') : t('setup_vault_create_button')}</Button>
             </CardFooter>
         </Card>
     </div>

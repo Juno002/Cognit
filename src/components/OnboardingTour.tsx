@@ -1,160 +1,196 @@
 
-"use client";
+// src/components/OnboardingTour.tsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import * as Popover from "@radix-ui/react-popover";
+import { X, ArrowLeft, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/use-translation";
+import type { Tour } from '@/types';
 
-import React, { useState, useEffect } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, X } from 'lucide-react';
-import { useCbtJournal } from '@/hooks/use-cbt-journal';
-import { useTranslation } from '@/hooks/use-translation';
+interface OnboardingTourProps {
+  activeTour?: Tour | null;
+  visible?: boolean;
+  onComplete?: (tourId: string) => Promise<void> | void;
+  onSkip?: (tourId: string) => Promise<void> | void;
+  onClose?: () => void;
+}
 
-export const OnboardingTour = () => {
-  const { showTour, completeTour } = useCbtJournal();
+export const OnboardingTour: React.FC<OnboardingTourProps> = ({
+  activeTour = null,
+  visible = false,
+  onComplete,
+  onSkip,
+  onClose,
+}) => {
   const { t } = useTranslation();
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-
-  const tourSteps = [
-    {
-      selector: '[data-tour="level-select"]',
-      title: t('tour_step1_title'),
-      content: t('tour_step1_content'),
-      side: 'bottom' as const,
-    },
-    {
-      selector: '[data-tour="analysis-tab"]',
-      title: t('tour_step2_title'),
-      content: t('tour_step2_content'),
-      side: 'bottom' as const,
-    },
-    {
-      selector: '[data-tour="autozip-button"]',
-      title: t('tour_step3_title'),
-      content: t('tour_step3_content'),
-      side: 'bottom' as const,
-    },
-  ];
+  const [open, setOpen] = useState<boolean>(visible && !!activeTour);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (showTour) {
-      setPopoverOpen(true);
-    } else {
-      setPopoverOpen(false);
+    setOpen(visible && !!activeTour);
+    setIndex(0);
+  }, [activeTour, visible]);
+
+  const currentStep = useMemo(() => {
+    if (!activeTour || !activeTour.steps) return null;
+    return activeTour.steps[index] ?? null;
+  }, [activeTour, index]);
+
+  const targetEl = useMemo(() => {
+    if (typeof window === 'undefined' || !currentStep?.targetSelector) return null;
+    try {
+      const el = document.querySelector(currentStep.targetSelector) as HTMLElement | null;
+      return el;
+    } catch {
+      return null;
     }
-  }, [showTour]);
+  }, [currentStep]);
+
+
+  const next = () => {
+    if (!activeTour) return;
+    if (index + 1 >= activeTour.steps.length) {
+      complete();
+    } else {
+      setIndex((i) => i + 1);
+    }
+  };
+
+  const prev = () => setIndex((i) => Math.max(0, i - 1));
   
+  const complete = async () => {
+    setOpen(false);
+    if (!activeTour) return;
+    await onComplete?.(activeTour.id);
+    onClose?.();
+  };
+
+  const skip = async () => {
+    setOpen(false);
+    if (!activeTour) return;
+    await onSkip?.(activeTour.id);
+    onClose?.();
+  };
+
+
   useEffect(() => {
-    if (!showTour) return;
-
-    const element = document.querySelector(tourSteps[currentStep].selector) as HTMLElement;
-    
-    if (element) {
-        setTargetElement(element);
-        element.style.zIndex = '100';
-        element.style.boxShadow = '0 0 0 4px hsl(var(--primary))';
-        element.style.borderRadius = 'var(--radius)';
-        element.style.transition = 'box-shadow 0.3s ease-in-out';
-    } else {
-        setTargetElement(null); // Element not found
-    }
-
-    // Cleanup function
-    return () => {
-      if (element) {
-        element.style.zIndex = '';
-        element.style.boxShadow = '';
-        element.style.borderRadius = '';
-        element.style.transition = '';
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!open) return;
+      if (e.key === "Escape") skip();
+      else if (e.key === "ArrowRight") next();
+      else if (e.key === "ArrowLeft") prev();
     };
-  }, [showTour, currentStep, tourSteps]);
-
-  const goToStep = (stepIndex: number) => {
-    const currentElement = document.querySelector(tourSteps[currentStep].selector) as HTMLElement;
-    if (currentElement) {
-        currentElement.style.zIndex = '';
-        currentElement.style.boxShadow = '';
-    }
-    setCurrentStep(stepIndex);
-  };
-
-  const handleNext = () => {
-    if (currentStep < tourSteps.length - 1) {
-      goToStep(currentStep + 1);
-    } else {
-      handleFinish();
-    }
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, index, activeTour]);
   
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      goToStep(currentStep - 1);
-    }
-  };
-  
-  const handleFinish = () => {
-    if(targetElement) {
-        targetElement.style.zIndex = '';
-        targetElement.style.boxShadow = '';
-    }
-    setPopoverOpen(false);
-    completeTour();
-  };
+  useEffect(() => {
+      if (targetEl) {
+        targetEl.style.zIndex = '101';
+        targetEl.style.boxShadow = '0 0 0 4px hsl(var(--primary))';
+        targetEl.style.borderRadius = 'var(--radius)';
+        targetEl.style.transition = 'box-shadow 0.3s ease-in-out';
+      }
+      return () => {
+          if (targetEl) {
+            targetEl.style.zIndex = '';
+            targetEl.style.boxShadow = '';
+          }
+      };
+  }, [targetEl]);
 
-  if (!showTour || !targetElement) {
-    return null;
+  if (!open || !activeTour || !currentStep) return null;
+
+  const isCentered = !targetEl || currentStep.placement === 'center';
+  
+  const content = (
+    <div className="flex flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h4 id={`tour-title-${currentStep.id}`} className="font-semibold text-lg">{currentStep.title}</h4>
+            <p id={`tour-body-${currentStep.id}`} className="mt-1 text-sm text-muted-foreground">{currentStep.body}</p>
+          </div>
+          <button
+            aria-label={t('close_button_aria')}
+            className="p-1 rounded hover:bg-muted"
+            onClick={skip}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground">
+              {index + 1}/{activeTour.steps.length}
+            </span>
+
+            <div className="flex items-center gap-2">
+              {currentStep.skippable !== false && (
+                <button
+                  className="text-sm text-muted-foreground underline"
+                  onClick={skip}
+                >
+                  {t('skip_tour_button')}
+                </button>
+              )}
+              {index > 0 && <button className="p-2 rounded-md hover:bg-muted" onClick={prev} aria-label={t('previous_button')}><ArrowLeft size={16} /></button>}
+              <button
+                className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold"
+                onClick={next}
+              >
+                {currentStep.actionLabel ?? (index === activeTour.steps.length - 1 ? t('finish_button') : t('next_button'))}
+              </button>
+            </div>
+        </div>
+    </div>
+  );
+
+  if (isCentered) {
+    return (
+      <div
+        aria-modal="true"
+        role="dialog"
+        aria-labelledby={`tour-title-${currentStep.id}`}
+        aria-describedby={`tour-body-${currentStep.id}`}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      >
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={skip} />
+        <div
+          className="z-[101] max-w-md w-full bg-card rounded-xl shadow-2xl p-5"
+          role="document"
+        >
+          {content}
+        </div>
+      </div>
+    )
   }
 
-  const { title, content, side } = tourSteps[currentStep];
-
   return (
-    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-       <PopoverTrigger asChild>
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: targetElement.getBoundingClientRect().top + window.scrollY, 
-            left: targetElement.getBoundingClientRect().left + window.scrollX,
-            width: targetElement.getBoundingClientRect().width,
-            height: targetElement.getBoundingClientRect().height,
-          }}
-        />
-      </PopoverTrigger>
-        <PopoverContent
-          side={side}
-          align="center"
-          className="w-80 z-[99] relative"
+    <Popover.Root open={true}>
+      <Popover.Anchor asChild>
+        <div style={{
+            position: 'absolute',
+            top: targetEl.getBoundingClientRect().top + window.scrollY,
+            left: targetEl.getBoundingClientRect().left + window.scrollX,
+            width: targetEl.getBoundingClientRect().width,
+            height: targetEl.getBoundingClientRect().height,
+        }}/>
+      </Popover.Anchor>
+      <Popover.Portal>
+        <Popover.Content
+          side={currentStep.placement}
           sideOffset={10}
+          align="center"
+          className="z-[102] w-72 rounded-lg bg-card p-4 shadow-2xl"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`tour-title-${currentStep.id}`}
+          aria-describedby={`tour-body-${currentStep.id}`}
         >
-        <button
-          onClick={handleFinish}
-          className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </button>
-        <div className="space-y-4">
-          <h4 className="font-bold text-lg">{title}</h4>
-          <p className="text-sm text-muted-foreground">{content}</p>
-          <div className="flex justify-between items-center">
-             <div className="text-sm">
-                {currentStep + 1} / {tourSteps.length}
-             </div>
-             <div className="flex gap-2">
-                {currentStep > 0 && (
-                  <Button variant="ghost" size="sm" onClick={handlePrev}>
-                    <ArrowLeft className="mr-1 h-4 w-4" /> {t('previous_button')}
-                  </Button>
-                )}
-                <Button size="sm" onClick={handleNext}>
-                  {currentStep === tourSteps.length - 1 ? t('finish_button') : t('next_button')}
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Button>
-             </div>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+         {content}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };

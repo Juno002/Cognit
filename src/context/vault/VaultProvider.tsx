@@ -1,27 +1,49 @@
 
 'use client';
 
-// src/context/vault/VaultProvider.tsx
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from "react";
-import { encryptJSON, decryptJSON } from "@/lib/client-crypto";
+import { encryptVault, decryptVault } from "@/lib/client-crypto";
 import type { CipherPackage } from "@/lib/client-crypto";
-import { loadVault, saveVault, wipeVault } from "@/lib/storage";
+import { loadVault, saveVault, wipeVault, saveRawVault } from "@/lib/storage";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/use-translation";
+import type { ExposureState, ActivationState, Achievement, CrisisConfig, Goal, GratitudeEntry, SleepEntry, TourState } from '@/types';
+import pako from 'pako';
 
-export type VaultData = any; // Will hold the entire app state { cbtEntries, exposureState, etc. }
+export type VaultData = {
+    cbtEntries: any[];
+    exposureState: ExposureState;
+    activationState: ActivationState;
+    achievements: Achievement[];
+    goals: Goal[];
+    gratitudeEntries: GratitudeEntry[];
+    sleepEntries: SleepEntry[];
+    config: {
+        crisisConfig: CrisisConfig;
+        lastPrompt: string;
+        ruminationCount: number;
+        tourCompleted?: boolean; // Legacy
+        tourState?: TourState;
+    }
+};
 
 type VaultContextType = {
   locked: boolean;
   hasVault: boolean;
-  unlock: (password: string) => Promise<boolean>;
+  unlock: (password: string) => Promise<{ success: boolean; error?: 'decryption' | 'locked' }>;
   lock: () => void;
   createVault: (password: string, initialData?: VaultData) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   getData: () => VaultData | null;
+  getRawVault: () => ArrayBuffer | null;
+  getEncryptedPackage: () => CipherPackage | null;
   setData: (d: VaultData) => Promise<void>;
   wipe: () => Promise<void>;
   attemptsLeft: number;
-  lockedUntil: number | null; // timestamp ms
+  lockedUntil: number | null;
   isChangingPassword: boolean;
+  password: React.MutableRefObject<string|null>['current'];
+  encryptVault: (plainBuffer: ArrayBuffer, password: string) => Promise<CipherPackage>;
 };
 
 const ctx = createContext<VaultContextType | undefined>(undefined);
@@ -33,23 +55,25 @@ export const useVault = () => {
 };
 
 const ATTEMPT_LIMIT = 5;
-const LOCK_BASE_MS = 30_000; // 30s base wait time, exponential backoff
+const LOCK_BASE_MS = 30_000;
 const AUTOLOCK_MINUTES = 3;
 
 export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [hasVault, setHasVault] = useState<boolean>(false);
   const [locked, setLocked] = useState<boolean>(true);
   const [pkg, setPkg] = useState<CipherPackage | null>(null);
   const [data, setDataState] = useState<VaultData | null>(null);
   const [attemptsLeft, setAttemptsLeft] = useState<number>(ATTEMPT_LIMIT);
-  const [failedAttempts, setFailedAttempts] = useState<number>(0);
+  const failedAttemptsRef = useRef<number>(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-  const passwordRef = useRef<string|null>(null); // Store password in memory only while unlocked
+  const passwordRef = useRef<string|null>(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // load vault existence on mount
   useEffect(() => {
     (async () => {
+      if (typeof window === 'undefined') return;
       const existing = await loadVault();
       if (existing) {
         setPkg(existing as CipherPackage);
@@ -57,7 +81,7 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setLocked(true);
       } else {
         setHasVault(false);
-        setLocked(false); // No vault, so not locked
+        setLocked(false);
       }
     })();
   }, []);
@@ -68,7 +92,6 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLocked(true);
   }, []);
 
-  // auto-lock on visibility change / inactivity
   useEffect(() => {
     let inactivityTimer: NodeJS.Timeout;
 
@@ -85,100 +108,126 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
     
-    document.addEventListener("visibilitychange", onVis);
-    window.addEventListener('mousemove', resetTimer);
-    window.addEventListener('keydown', resetTimer);
-    
-    resetTimer();
+    if (typeof window !== 'undefined') {
+        document.addEventListener("visibilitychange", onVis);
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+        resetTimer();
+    }
 
     return () => {
-        document.removeEventListener("visibilitychange", onVis);
-        window.removeEventListener('mousemove', resetTimer);
-        window.removeEventListener('keydown', resetTimer);
-        clearTimeout(inactivityTimer);
+        if (typeof window !== 'undefined') {
+            document.removeEventListener("visibilitychange", onVis);
+            window.removeEventListener('mousemove', resetTimer);
+            window.removeEventListener('keydown', resetTimer);
+            clearTimeout(inactivityTimer);
+        }
     };
   }, [locked, lock]);
 
 
-  const createVault = useCallback(async (password: string, initialData: VaultData = {}) => {
-    const encrypted = await encryptJSON(initialData, password);
+  const createVault = useCallback(async (password: string, initialData: VaultData) => {
+    const dataString = JSON.stringify(initialData);
+    const compressed = pako.deflate(dataString);
+    const encrypted = await encryptVault(compressed.buffer, password);
+
     await saveVault(encrypted);
     setPkg(encrypted);
     setHasVault(true);
     setLocked(false);
     setDataState(initialData);
     setAttemptsLeft(ATTEMPT_LIMIT);
-    setFailedAttempts(0);
+    failedAttemptsRef.current = 0;
     passwordRef.current = password;
   }, []);
 
   const unlock = useCallback(async (password: string) => {
-    if (!pkg) return false;
+    if (!pkg) return { success: false, error: 'decryption' };
 
-    // check lockout
-    if (lockedUntil && Date.now() < lockedUntil) return false;
+    if (lockedUntil && Date.now() < lockedUntil) return { success: false, error: 'locked' };
 
-    try {
-      const d = await decryptJSON(pkg, password);
-      setDataState(d);
-      setLocked(false);
-      setAttemptsLeft(ATTEMPT_LIMIT);
-      setFailedAttempts(0);
-      setLockedUntil(null);
-      passwordRef.current = password; // Store password in memory
-      return true;
-    } catch (err) {
-      const newFailed = failedAttempts + 1;
-      setFailedAttempts(newFailed);
-      const left = Math.max(0, ATTEMPT_LIMIT - newFailed);
-      setAttemptsLeft(left);
-      if (newFailed >= ATTEMPT_LIMIT) {
-        // lockout with exponential backoff
-        const ms = LOCK_BASE_MS * Math.pow(2, newFailed - ATTEMPT_LIMIT);
-        setLockedUntil(Date.now() + ms);
+    const decryptedBuffer = await decryptVault(pkg, password);
+
+    if (decryptedBuffer) {
+      try {
+        const decompressed = pako.inflate(new Uint8Array(decryptedBuffer), { to: 'string' });
+        const d = JSON.parse(decompressed);
+        setDataState(d);
+        setLocked(false);
+        failedAttemptsRef.current = 0;
+        setAttemptsLeft(ATTEMPT_LIMIT);
+        setLockedUntil(null);
+        passwordRef.current = password;
+        return { success: true };
+      } catch (e) {
+        // Fallback for uncompressed old vaults
+        try {
+          const d = JSON.parse(new TextDecoder().decode(decryptedBuffer));
+           setDataState(d);
+           setLocked(false);
+           passwordRef.current = password;
+           return { success: true };
+        } catch (finalError) {
+             return { success: false, error: 'decryption' };
+        }
       }
-      return false;
+    } else {
+      failedAttemptsRef.current += 1;
+      const left = Math.max(0, ATTEMPT_LIMIT - failedAttemptsRef.current);
+      setAttemptsLeft(left);
+      if (left === 0) {
+        const lockoutDuration = LOCK_BASE_MS * Math.pow(2, failedAttemptsRef.current - ATTEMPT_LIMIT);
+        const newLockedUntil = Date.now() + lockoutDuration;
+        setLockedUntil(newLockedUntil);
+        return { success: false, error: 'locked' };
+      }
+      return { success: false, error: 'decryption' };
     }
-  }, [pkg, failedAttempts, lockedUntil]);
+  }, [pkg, lockedUntil]);
 
   const setData = useCallback(async (d: VaultData) => {
       if (locked || !passwordRef.current) {
           console.error("Attempted to set data while vault is locked or password is not available.");
+           toast({
+              title: "Error: Vault Locked",
+              description: "Cannot save data while the vault is locked.",
+              variant: "destructive",
+          });
           return;
       }
       setDataState(d);
-      // Re-encrypt and save data with the stored password
-      const encrypted = await encryptJSON(d, passwordRef.current);
+      
+      const dataString = JSON.stringify(d);
+      const compressed = pako.deflate(dataString);
+      const encrypted = await encryptVault(compressed.buffer, passwordRef.current);
       await saveVault(encrypted);
       setPkg(encrypted);
-  }, [locked]);
+  }, [locked, toast]);
 
-    const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
-        if (locked) {
-            throw new Error("Vault must be unlocked to change password.");
-        }
-        
-        setIsChangingPassword(true);
-        try {
-            const currentPkg = await loadVault();
-            if (!currentPkg) throw new Error("No vault found.");
-            
-            let decryptedData;
-            try {
-                decryptedData = await decryptJSON(currentPkg, currentPassword);
-            } catch (e) {
-                return false; // Incorrect current password
-            }
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+      if (locked) {
+          throw new Error("Vault must be unlocked to change password.");
+      }
+      
+      setIsChangingPassword(true);
+      try {
+          const rawVaultBuffer = getRawVault();
+          if (!rawVaultBuffer) return false;
 
-            const newPkg = await encryptJSON(decryptedData, newPassword);
-            await saveVault(newPkg);
-            setPkg(newPkg);
-            passwordRef.current = newPassword; // Update in-memory password
-            return true;
-        } finally {
-            setIsChangingPassword(false);
-        }
-    }, [locked]);
+          // The raw vault is already compressed. Re-encrypt with the new password.
+          const newPkg = await encryptVault(rawVaultBuffer, newPassword);
+          await saveVault(newPkg);
+          
+          setPkg(newPkg);
+          passwordRef.current = newPassword;
+          return true;
+      } catch (e) {
+        console.error("Password change failed:", e);
+        return false;
+      } finally {
+          setIsChangingPassword(false);
+      }
+  }, [locked, data]);
 
   const wipe = useCallback(async () => {
     await wipeVault();
@@ -187,10 +236,23 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setHasVault(false);
     setLocked(false);
     setAttemptsLeft(ATTEMPT_LIMIT);
-    setFailedAttempts(0);
+    failedAttemptsRef.current = 0;
     setLockedUntil(null);
     passwordRef.current = null;
-  }, []);
+    toast({ title: t('toast_journal_reset_title'), description: t('toast_journal_reset_desc') });
+  }, [t, toast]);
+
+  const getRawVault = useCallback(() => {
+    if (!data || typeof window === 'undefined') return null;
+    try {
+      const dataString = JSON.stringify(data);
+      const compressed = pako.deflate(dataString);
+      return compressed.buffer;
+    } catch (e) {
+      console.error("Failed to get raw vault:", e);
+      return null;
+    }
+  }, [data]);
 
 
   const value = useMemo<VaultContextType>(() => ({
@@ -201,14 +263,16 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     createVault,
     changePassword,
     getData: () => data,
+    getRawVault,
+    getEncryptedPackage: () => pkg,
     setData,
     wipe,
     attemptsLeft,
     lockedUntil,
     isChangingPassword,
-  }), [locked, hasVault, unlock, lock, createVault, changePassword, data, setData, wipe, attemptsLeft, lockedUntil, isChangingPassword]);
+    password: passwordRef.current,
+    encryptVault,
+  }), [locked, hasVault, unlock, lock, createVault, changePassword, data, pkg, getRawVault, setData, wipe, attemptsLeft, lockedUntil, isChangingPassword]);
 
   return <ctx.Provider value={value}>{children}</ctx.Provider>;
 };
-
-    

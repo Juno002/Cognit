@@ -1,6 +1,3 @@
-
-"use client";
-
 import type { Achievement } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import {

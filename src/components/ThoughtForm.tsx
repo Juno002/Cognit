@@ -1,10 +1,10 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useImperativeHandle, Ref } from 'react';
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { BookPlus, X, Volume2, MicOff, Mic, Link as LinkIcon, HelpCircle } from 'lucide-react';
+import { BookPlus, X, Volume2, Mic, Link as LinkIcon, HelpCircle, Target, Zap } from 'lucide-react';
 import type { ThoughtEntryData, ThoughtEntryFormData } from '@/types';
 import { todayISO } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH } from '@/lib/constants';
@@ -24,6 +24,7 @@ import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/hooks/use-translation';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 
 const formSchema = z.object({
@@ -39,8 +40,10 @@ const formSchema = z.object({
   emotion: z.string().min(1, "La emoción es obligatoria."),
   intensity: z.number().min(1).max(10),
   tags: z.array(z.string()),
+  linkedGoalId: z.string().optional(),
 }).refine(data => {
     if (data.level === 3) {
+      if (!data.originalIntensity || !data.finalCredibility) return true;
       if (data.originalIntensity < data.finalCredibility) {
         return false;
       }
@@ -81,6 +84,8 @@ interface ThoughtFormProps {
   onSubmit: (data: ThoughtEntryData) => void;
   stats: JournalStats;
   formRef: Ref<UseFormReturn<FormValues>>;
+  onOpenChange: (open: boolean) => void;
+  onNavigateToAction: () => void;
 }
 
 type TextareaFieldNames = "note" | "situation" | "automaticThought" | "alternativeResponse";
@@ -111,8 +116,8 @@ const SpeechButton: React.FC<{ field: TextareaFieldNames, form: UseFormReturn<Fo
 };
 
 
-const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) => {
-  const { isSaving } = useCbtJournal();
+const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onOpenChange, onNavigateToAction }) => {
+  const { isSaving, goals } = useCbtJournal();
   const { t } = useTranslation();
   const [level, setLevel] = useState(1);
   const [prompt, setPrompt] = useState('');
@@ -137,12 +142,17 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
       emotion: '',
       intensity: 5,
       tags: [],
+      linkedGoalId: '',
     },
   });
 
   useImperativeHandle(formRef, () => form);
 
   const watchedLevel = form.watch('level');
+  const watchedEmotion = form.watch('emotion');
+  const watchedIntensity = form.watch('intensity');
+  const inProgressGoals = useMemo(() => goals.filter(g => g.status === 'in-progress'), [goals]);
+  const showActivationSuggestion = useMemo(() => ['Tired', 'Sad', 'Cansado', 'Triste'].includes(watchedEmotion) && watchedIntensity < 6 && watchedLevel < 3, [watchedEmotion, watchedIntensity, watchedLevel]);
 
   const fieldStyles = (fieldValue?: string) =>
     cn(
@@ -217,23 +227,26 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
     utterance.onerror = () => setIsSpeaking(false);
     speechSynthesis.speak(utterance);
   };
-
+  
+  const handleNavigateClick = () => {
+    onOpenChange(false); // Close the form dialog
+    onNavigateToAction(); // Trigger navigation
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <BookPlus className="text-primary" />
-          {t('form_title')}
-        </CardTitle>
-        <CardDescription>{t('form_description')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-accent/50 border-l-4 border-accent p-4 rounded-md mb-6 flex justify-between items-center">
+    <DialogContent className="max-h-screen overflow-y-scroll">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <BookPlus className="text-primary" />
+            {t('form_title')}
+          </DialogTitle>
+          <DialogDescription>{t('form_description')}</DialogDescription>
+        </DialogHeader>
+        <div className="bg-accent/50 border-l-4 border-accent p-4 rounded-md flex justify-between items-center">
             <span className="text-sm italic">{prompt}</span>
             {typeof window !== 'undefined' && 'speechSynthesis' in window && (
                 <Button variant="ghost" size="icon" onClick={handleSpeak} className="h-7 w-7 shrink-0" aria-label={t('speak_prompt_aria')}>
-                    {isSpeaking ? <MicOff className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    {isSpeaking ? <X className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
             )}
         </div>
@@ -295,51 +308,62 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
                 </FormItem>
               )}
             />
+
+            {showActivationSuggestion && (
+                <div className="border-l-4 border-yellow-500 bg-yellow-500/10 p-3 rounded-r-md text-sm">
+                    <p className="font-semibold">{t('proactive_activation_title')}</p>
+                    <p className="mb-2">{t('proactive_activation_desc')}</p>
+                    <Button type="button" size="sm" variant="outline" onClick={handleNavigateClick}>
+                        <Zap className="mr-2 h-4 w-4" />
+                        {t('proactive_activation_action')}
+                    </Button>
+                </div>
+            )}
             
-             {watchedLevel === 2 && (
-                 <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
-                    <AccordionItem value="item-1">
-                        <AccordionTrigger>
-                            {t('creative_expression_title')}
-                        </AccordionTrigger>
-                        <AccordionContent>
-                           <div className="space-y-4 pt-4">
-                            <FormField
-                                control={form.control}
-                                name="creativeLink"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <div className="flex items-center gap-2">
-                                            <FormLabel>🔗 {t('creative_link_label')}</FormLabel>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p className="max-w-xs">{t('creative_link_tooltip')}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </div>
-                                    <FormControl>
-                                        <div className="relative flex items-center">
-                                            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input className="pl-10" placeholder="https://..." {...field} />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                           </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                 </Accordion>
-             )}
+             <div className={cn("form-group-hidden", watchedLevel === 2 && "form-group-visible")}>
+                <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+                  <AccordionItem value="item-1">
+                      <AccordionTrigger>
+                          {t('creative_expression_title')}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                         <div className="space-y-4 pt-4">
+                          <FormField
+                              control={form.control}
+                              name="creativeLink"
+                              render={({ field }) => (
+                                  <FormItem>
+                                      <div className="flex items-center gap-2">
+                                          <FormLabel>🔗 {t('creative_link_label')}</FormLabel>
+                                          <TooltipProvider>
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>
+                                                      <p className="max-w-xs">{t('creative_link_tooltip')}</p>
+                                                  </TooltipContent>
+                                              </Tooltip>
+                                          </TooltipProvider>
+                                      </div>
+                                  <FormControl>
+                                      <div className="relative flex items-center">
+                                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                          <Input className="pl-10" placeholder="https://..." {...field} />
+                                      </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                         </div>
+                      </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+             </div>
 
 
-            {watchedLevel === 3 && (
+            <div className={cn("form-group-hidden", watchedLevel === 3 && "form-group-visible")}>
               <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger>
@@ -411,18 +435,20 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
                               name="alternativeResponse"
                               render={({ field }) => (
                                   <FormItem>
-                                    <div className="flex items-center gap-2">
-                                        <FormLabel>{t('alt_response_label')}</FormLabel>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p className="max-w-xs">{t('alt_response_tooltip')}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                          <FormLabel>{t('alt_response_label')}</FormLabel>
+                                          <TooltipProvider>
+                                              <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>
+                                                      <p className="max-w-xs">{t('alt_response_tooltip')}</p>
+                                                  </TooltipContent>
+                                              </Tooltip>
+                                          </TooltipProvider>
+                                      </div>
                                     </div>
                                   <FormControl>
                                       <div className="relative">
@@ -471,7 +497,7 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-            )}
+            </div>
 
 
             <div className="space-y-4 rounded-md border p-4">
@@ -554,16 +580,45 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef }) =
                         </FormItem>
                     )}
                 />
+                {inProgressGoals.length > 0 && (
+                    <FormField
+                        control={form.control}
+                        name="linkedGoalId"
+                        render={({ field }) => (
+                            <FormItem data-tour="journal-link-goal">
+                                <FormLabel className="flex items-center gap-2"><Target className="h-4 w-4" />{t('goal_associate_label')}</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('goal_associate_placeholder')} />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="">{t('goal_associate_none')}</SelectItem>
+                                        {inProgressGoals.map(goal => (
+                                            <SelectItem key={goal.id} value={goal.id}>{goal.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
             </div>
             
-            <Button type="submit" className="w-full" disabled={isSaving}>
-              {isSaving ? t('saving_button') : `💾 ${t('save_button')}`}
-            </Button>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button type="button" variant="ghost">{t('cancel')}</Button>
+                </DialogClose>
+                <Button type="submit" disabled={isSaving}>
+                    {isSaving ? t('saving_button') : `💾 ${t('save_button')}`}
+                </Button>
+            </DialogFooter>
             <p className="hidden sm:block text-xs text-center text-muted-foreground">{t('shortcut_save')}</p>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </DialogContent>
   );
 };
 
