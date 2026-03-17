@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface BreathingGuideProps {
   onStop: () => void;

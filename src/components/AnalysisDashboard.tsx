@@ -12,7 +12,7 @@ import type { JournalStats, JournalAnalysis } from '@/hooks/use-cbt-journal';
 import { MIN_SESSIONS_FOR_ANALYSIS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { ThoughtEntry } from '@/types';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
 
 interface AnalysisDashboardProps {

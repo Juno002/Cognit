@@ -28,7 +28,8 @@ import {
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import HelpModal from '@/components/modals/HelpModal';
 import SettingsModal from '@/components/modals/SettingsModal';
-import type { CrisisConfig } from '@/hooks/use-cbt-journal';
+import { useCbtJournal } from '@/hooks/use-cbt-journal';
+import type { CrisisConfig } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';

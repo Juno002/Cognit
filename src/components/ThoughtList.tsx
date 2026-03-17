@@ -9,7 +9,7 @@ import type { ThoughtEntry, ThoughtEntryFormData } from '@/types';
 import { List, Trash2, ChevronsDown, ArrowRight, Link as LinkIcon, Target } from 'lucide-react';
 import { formatDate, calculateICC } from '@/lib/utils';
 import { NegativeStreakAlert } from './NegativeStreakAlert';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 import { useCbtJournal } from '@/hooks/use-cbt-journal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 

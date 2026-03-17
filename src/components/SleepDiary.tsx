@@ -117,14 +117,7 @@ const SleepDiary: React.FC<SleepDiaryProps> = ({ entries, onAddEntry }) => {
   const CustomDot: React.FC<any> = (props) => {
     const { cx, cy, payload } = props;
     if (payload.Efficiency < 80) {
-      return (
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Dot cx={cx} cy={cy} r={5} fill="hsl(var(--warning))" />
-          </Tooltip.Trigger>
-          <Tooltip.Content>{t('sleep.chart.low_efficiency_tip')}</Tooltip.Content>
-        </Tooltip>
-      );
+      return <Dot cx={cx} cy={cy} r={5} fill="hsl(var(--warning))" />;
     }
      if (payload.Efficiency >= 85) {
       return <Dot cx={cx} cy={cy} r={5} fill="hsl(var(--success))" />;
@@ -219,7 +212,7 @@ const SleepDiary: React.FC<SleepDiaryProps> = ({ entries, onAddEntry }) => {
                         <li key={entry.id} className="p-3 border rounded-md">
                             <p className="font-bold text-primary">{formatDate(entry.date, t('locale'))}</p>
                             <div className="flex justify-between items-center text-sm font-semibold">
-                                <span className={cn(entry.sleepEfficiencyPct < 80 && 'text-warning', entry.sleepEfficiencyPct >= 85 && 'text-success')}>{t('sleep.efficiency')}: <span className="text-lg">{entry.sleepEfficiencyPct}%</span></span>
+                                <span className={cn((entry.sleepEfficiencyPct ?? 0) < 80 && 'text-warning', (entry.sleepEfficiencyPct ?? 0) >= 85 && 'text-success')}>{t('sleep.efficiency')}: <span className="text-lg">{entry.sleepEfficiencyPct ?? 0}%</span></span>
                                 <span className="flex items-center">{t('sleep.quality')}: <Star className={cn("ml-1 h-5 w-5", entry.sleepQuality >= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300")} /> {entry.sleepQuality}/5</span>
                             </div>
                             {entry.notes && <p className="text-sm mt-2 italic">"{entry.notes}"</p>}

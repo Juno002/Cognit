@@ -1,4 +1,3 @@
-
 {
   "locale": "es-ES",
   "metadata_title": "Cognit λ",
@@ -94,20 +93,73 @@
   "settings_toast_incomplete_contact_title": "⚠️ Datos incompletos",
   "settings_toast_incomplete_contact_desc": "Por favor, introduce nombre y teléfono.",
   "emotions": [
-    { "emoji": "😌", "label": "Tranquilo", "color": "#A7F3D0" },
-    { "emoji": "😰", "label": "Ansioso", "color": "#FBBF24" },
-    { "emoji": "😊", "label": "Contento", "color": "#6EE7B7" },
-    { "emoji": "😔", "label": "Triste", "color": "#93C5FD" },
-    { "emoji": "😡", "label": "Irritado", "color": "#F87171" },
-    { "emoji": "🤔", "label": "Reflexivo", "color": "#C4B5FD" },
-    { "emoji": "😴", "label": "Cansado", "color": "#A5B4FC" },
-    { "emoji": "🙏", "label": "Agradecido", "color": "#FBCFE8" }
+    {
+      "emoji": "😌",
+      "label": "Tranquilo",
+      "color": "#A7F3D0"
+    },
+    {
+      "emoji": "😰",
+      "label": "Ansioso",
+      "color": "#FBBF24"
+    },
+    {
+      "emoji": "😊",
+      "label": "Contento",
+      "color": "#6EE7B7"
+    },
+    {
+      "emoji": "😔",
+      "label": "Triste",
+      "color": "#93C5FD"
+    },
+    {
+      "emoji": "😡",
+      "label": "Irritado",
+      "color": "#F87171"
+    },
+    {
+      "emoji": "🤔",
+      "label": "Reflexivo",
+      "color": "#C4B5FD"
+    },
+    {
+      "emoji": "😴",
+      "label": "Cansado",
+      "color": "#A5B4FC"
+    },
+    {
+      "emoji": "🙏",
+      "label": "Agradecido",
+      "color": "#FBCFE8"
+    }
   ],
-  "risk_keywords": ["suicidio", "morir", "desaparecer", "no vale la pena", "terminar con todo", "hacerme daño", "dejar de existir", "último día"],
-  "default_crisis_line": { "name": "Teléfono de la Esperanza", "number": "717 003 717", "code": "ES" },
+  "risk_keywords": [
+    "suicidio",
+    "morir",
+    "desaparecer",
+    "no vale la pena",
+    "terminar con todo",
+    "hacerme daño",
+    "dejar de existir",
+    "último día"
+  ],
+  "default_crisis_line": {
+    "name": "Teléfono de la Esperanza",
+    "number": "717 003 717",
+    "code": "ES"
+  },
   "extra_crisis_lines": [
-    { "name": "Línea Nacional de Prevención del Suicidio (Global)", "number": "988", "code": "US" },
-    { "name": "Argentina (Emergencias)", "number": "135", "code": "AR" }
+    {
+      "name": "Línea Nacional de Prevención del Suicidio (Global)",
+      "number": "988",
+      "code": "US"
+    },
+    {
+      "name": "Argentina (Emergencias)",
+      "number": "135",
+      "code": "AR"
+    }
   ],
   "distortions": [
     {
@@ -115,22 +167,54 @@
       "name": "Filtro Mental",
       "description": "Te centras en los aspectos negativos de una situación e ignoras los positivos.",
       "example": "Recibí una evaluación de desempeño con muchos elogios, pero me obsesioné con el único comentario negativo.",
-      "keywords": ["terrible", "horrible", "desastre", "arruinado"]
+      "keywords": [
+        "terrible",
+        "horrible",
+        "desastre",
+        "arruinado"
+      ]
     },
     {
       "id": "pensamiento-polarizado",
       "name": "Pensamiento Polarizado (Todo o Nada)",
       "description": "Ves las cosas en términos absolutos, de blanco o negro. Si algo no es perfecto, es un fracaso total.",
       "example": "Si no saco un 10 en el examen, soy un completo fracasado.",
-      "keywords": ["perfecto", "fracaso total", "éxito total", "desastre absoluto", "inútil", "genio"]
+      "keywords": [
+        "perfecto",
+        "fracaso total",
+        "éxito total",
+        "desastre absoluto",
+        "inútil",
+        "genio"
+      ]
     }
   ],
   "all_achievements_definitions": [
-    { "id": "consistency_3d", "emoji": "🟢", "name": "Racha 3 Días" },
-    { "id": "consistency_7d", "emoji": "✨", "name": "Racha Semanal" },
-    { "id": "l3_first_use", "emoji": "🏆", "name": "Primer L3" },
-    { "id": "emotion_spectrum", "emoji": "🌈", "name": "Espectro Emocional" },
-    { "id": "first_cbt_cycle", "emoji": "🔗", "name": "Primer Ciclo TCC" }
+    {
+      "id": "consistency_3d",
+      "emoji": "🟢",
+      "name": "Racha 3 Días"
+    },
+    {
+      "id": "consistency_7d",
+      "emoji": "✨",
+      "name": "Racha Semanal"
+    },
+    {
+      "id": "l3_first_use",
+      "emoji": "🏆",
+      "name": "Primer L3"
+    },
+    {
+      "id": "emotion_spectrum",
+      "emoji": "🌈",
+      "name": "Espectro Emocional"
+    },
+    {
+      "id": "first_cbt_cycle",
+      "emoji": "🔗",
+      "name": "Primer Ciclo TCC"
+    }
   ],
   "base_prompts_level_1": [
     "¿Qué pensamiento te visitó más hoy y cómo lo notas en tu cuerpo?",
@@ -362,7 +446,7 @@
   "pwa_install_button": "Instalar",
   "pwa_later_button": "Más tarde",
   "close_button_aria": "Cerrar",
-  "understood_button": "Entendido",
+  "understood_button": "✅ Entendido, estoy a salvo",
   "help_title": "❓ Ayuda y Conceptos Clave",
   "help_description": "Una guía rápida para sacar el máximo provecho a Cognit λ.",
   "help_section1_title": "🧠 El Método TCC",
@@ -430,7 +514,6 @@
   "no_contacts_configured": "No has configurado contactos. Añádelos en Ajustes > Plan de Crisis.",
   "help_lines_title": "Líneas de Ayuda (Local/Global)",
   "breathing_guide_button": "Guiar Respiración (4-7-8)",
-  "understood_button": "✅ Entendido, estoy a salvo",
   "form_title": "Nueva Sesión de TCC",
   "form_description": "Registrar → Crear → Integrar",
   "speak_prompt_aria": "Leer prompt en voz alta",
@@ -483,5 +566,363 @@
   "session_history_title": "Historial de Sesiones",
   "session_count": "{{count}} sesiones",
   "no_sessions_found": "No hay sesiones que coincidan con los filtros.",
-  "load_more_button": "Cargar más"
+  "load_more_button": "Cargar más",
+  "header_export_pdf": "Exportar a PDF",
+  "tab_activation": "Activación",
+  "tab_wellness": "Bienestar",
+  "tab_goals": "Metas",
+  "tab_sleep": "Sueño",
+  "help_activation_subtitle": "De la Inercia a la Acción",
+  "help_wellness_subtitle": "Practicando Mindfulness y Aceptación",
+  "help_section5_p1": "La ERP (Exposición y Prevención de Respuesta) es la terapia más efectiva para la ansiedad y el TOC. Así es como se usa este módulo:",
+  "skip_tour_button": "Saltar tour",
+  "error_file_import_failed": "Error al importar el archivo.",
+  "return_home_button": "Volver al inicio",
+  "or_divider": "O",
+  "import_from_file_button": "Importar desde archivo .vault",
+  "help_activation_title": "¿Qué es la Activación Conductual?",
+  "help_activation_desc": "Es una técnica fundamental para combatir la baja motivación y la depresión. Se centra en programar sistemáticamente actividades gratificantes que estén alineadas con tus valores personales, ayudando a romper el ciclo de inactividad y tristeza.",
+  "help_wellness_title": "¿Qué es el Espacio de Bienestar?",
+  "help_wellness_desc": "Esta sección está dedicada al pilar \"Ser\" de la TCC: Mindfulness. Aquí encontrarás herramientas como el Diario de Gratitud y juegos cognitivos para practicar la aceptación, la presencia y distanciarte de tus pensamientos.",
+  "help_goals_title": "🎯 ¿Qué son las Metas SMART?",
+  "help_goals_subtitle": "De la Intención a la Acción",
+  "help_goals_desc": "Este módulo te ayuda a convertir tus deseos abstractos en planes concretos y terapéuticos. Siguiendo la metodología SMART (Específico, Medible, Alcanzable, Relevante y con Tiempo definido), puedes definir objetivos claros, rastrear tu progreso con una barra visual, e incluso vincular tus metas a entradas específicas del diario para conectar tus acciones con tu estado emocional.",
+  "help_sleep_title": "🛌 Diario de Sueño (TCC-I)",
+  "help_sleep_subtitle": "Optimizando Tu Descanso",
+  "help_sleep_desc": "Esta herramienta está basada en la Terapia Cognitivo-Conductual para el Insomnio (TCC-I) y te ayuda a mejorar tu \"higiene del sueño\". Al registrar tus patrones de sueño, la app calcula automáticamente métricas clave para optimizar tu descanso.",
+  "help_sleep_l1_title": "Métrica Clave: Eficiencia del Sueño",
+  "help_sleep_l1_desc": "Este porcentaje indica cuánto del tiempo que pasas en cama realmente estás dormido. Una eficiencia >85% se considera generalmente buena. Si es consistentemente baja, puede ser una señal para aplicar técnicas de higiene del sueño.",
+  "help_sleep_l2_title": "Cómo Usarlo:",
+  "help_sleep_l2_desc": "Registra tu hora de acostarte, hora de despertar, cuánto tardaste en dormirte y el tiempo que estuviste despierto durante la noche. La app se encarga de los cálculos.",
+  "help_sleep_l3_title": "Objetivo:",
+  "help_sleep_l3_desc": "Identificar patrones y usar los datos para hacer ajustes (ej. establecer una hora de dormir más consistente, evitar pantallas antes de dormir) para mejorar tu eficiencia y calidad del sueño con el tiempo.",
+  "erp_toast_item_added": "✅ Ítem de miedo añadido.",
+  "erp_toast_log_saved": "💪 ¡Exposición registrada!",
+  "erp_toast_log_desc": "La ansiedad se redujo {{reduction}} puntos. ¡Sigue así!",
+  "hierarchy_generated_title": "Jerarquía Generada",
+  "hierarchy_generated_desc": "Se han añadido nuevos ítems a tu jerarquía de miedos.",
+  "ai_error_title": "Error de IA",
+  "ai_error_desc": "No se pudo generar la jerarquía.",
+  "error_title": "Error",
+  "settings_appearance_title": "Apariencia",
+  "settings_theme_label": "Tema de Color",
+  "settings_select_theme_aria": "Seleccionar tema",
+  "analysis_goals_title": "Progreso de Metas",
+  "analysis_goals_desc": "Tu progreso hacia tus metas SMART.",
+  "analysis_goals_completed": "Completadas",
+  "generate_hierarchy_ai_title": "Generar Jerarquía con IA",
+  "generate_hierarchy_ai_desc": "Describe tu miedo o fobia y la IA creará una jerarquía de exposición gradual para ti.",
+  "generate_hierarchy_ai_placeholder": "Ej. Miedo a las alturas, fobia social...",
+  "generate_button": "Generar",
+  "close_button": "Cerrar",
+  "delete_entry_aria_label": "Eliminar entrada",
+  "defusion_game_title": "Juego de Defusión Cognitiva",
+  "defusion_game_desc": "Practica ver tus pensamientos solo como pensamientos, no como hechos.",
+  "defusion_game_placeholder": "Escribe un pensamiento negativo...",
+  "defusion_game_button": "¡Defusionar!",
+  "defusion_game_result": "Defusionado",
+  "defusion_prefix": "Estoy teniendo el pensamiento de que \"{{thought}}\"",
+  "defusion_emotion": "Desapegado",
+  "defusion_note": "Usé el Juego de Defusión para distanciarme del pensamiento: \"{{thought}}\".",
+  "defusion_situation": "Juego de Defusión Cognitiva",
+  "defusion_expand_button": "Expandir en el Diario",
+  "activation_value_name_label": "Nombre del Valor",
+  "activation_value_name_placeholder": "Ej. \"Conexión\", \"Salud\", \"Creatividad\"",
+  "description": "Descripción",
+  "activation_value_desc_placeholder": "¿Qué significa este valor para ti?",
+  "activation_edit_value_title": "Editar Valor",
+  "activation_add_value_title": "Añadir Nuevo Valor",
+  "activation_activity_name_label": "Nombre de la Actividad",
+  "activation_activity_name_placeholder": "Ej. \"Llamar a un amigo\", \"Salir a caminar\"",
+  "activation_related_value_label": "Valor Relacionado",
+  "activation_pleasure_label": "Placer Esperado (0-10): {{value}}",
+  "activation_mastery_label": "Dominio Esperado (0-10): {{value}}",
+  "activation_edit_activity_title": "Editar Actividad",
+  "activation_add_activity_title": "Añadir Nueva Actividad",
+  "activation_add_activity_action": "+ Crear Actividad",
+  "activation_values_title": "Tus Valores Personales",
+  "activation_values_desc": "¿Qué es verdaderamente importante para ti en la vida?",
+  "activation_add_first_value_message": "Añade tu primer valor para empezar a construir tu brújula vital.",
+  "activation_activities_title": "Tus Actividades Energizantes",
+  "activation_activities_desc": "Acciones alineadas con tus valores que te generan placer o sensación de logro.",
+  "activation_no_activities_for_value": "Aún no hay actividades para este valor. ¡Añade una!",
+  "activation_add_value_to_add_activity": "Necesitas añadir un valor antes de poder añadir una actividad.",
+  "activation_pleasure_label_short": "Placer",
+  "activation_mastery_label_short": "Dominio",
+  "activation_subtasks_button": "Subtareas",
+  "activation_add_subtask_placeholder": "Añadir subtarea...",
+  "pomodoro_title": "Temporizador Pomodoro",
+  "pomodoro_start_button": "Iniciar 25 min",
+  "pomodoro_stop_button": "Detener",
+  "pomodoro_reset_button": "Reiniciar",
+  "pomodoro_session_complete_title": "¡Sesión completada!",
+  "pomodoro_session_complete_desc": "Tómate un descanso de 5 minutos.",
+  "wellness_gratitude_title": "Diario de Gratitud",
+  "wellness_gratitude_desc": "Una práctica sencilla para contrarrestar el sesgo de negatividad de la mente.",
+  "wellness_gratitude_prompt": "¿Cuáles son 3 cosas buenas que pasaron hoy?",
+  "wellness_gratitude_item_placeholder_1": "Ej. Un amigo me envió un mensaje bonito...",
+  "wellness_gratitude_item_placeholder_2": "Ej. El café de la mañana estuvo perfecto...",
+  "wellness_gratitude_item_placeholder_3": "Ej. Terminé una tarea que estaba posponiendo...",
+  "wellness_save_gratitude_button": "Guardar Gratitud",
+  "wellness_gratitude_saved_toast": "¡Gratitud guardada!",
+  "wellness_gratitude_history_title": "Historial de Gratitud",
+  "change_password_title": "Cambiar Contraseña",
+  "change_password_current_label": "Contraseña Actual",
+  "change_password_new_label": "Nueva Contraseña",
+  "change_password_confirm_label": "Confirmar Nueva Contraseña",
+  "change_password_button": "Cambiar Contraseña",
+  "change_password_loading": "Cambiando...",
+  "change_password_error_length": "La nueva contraseña debe tener al menos 6 caracteres.",
+  "change_password_error_mismatch": "Las nuevas contraseñas no coinciden.",
+  "change_password_error_current": "La contraseña actual es incorrecta.",
+  "change_password_success_title": "✅ Contraseña cambiada exitosamente.",
+  "setup_vault_title": "🔐 Protege Tu Diario",
+  "setup_vault_desc": "Elige una contraseña o PIN para cifrar tus datos. Esta clave nunca sale de tu dispositivo.",
+  "setup_vault_warning": "⚠️ Si olvidas esta contraseña, tus datos serán irrecuperables.",
+  "setup_vault_placeholder_pass": "Contraseña o PIN (mín. 6 caracteres)",
+  "setup_vault_placeholder_confirm": "Repetir contraseña",
+  "setup_vault_error_length": "Usa al menos 6 caracteres (mejor: contraseña alfanumérica).",
+  "setup_vault_error_mismatch": "Las contraseñas no coinciden.",
+  "setup_vault_error_generic": "Error al crear la bóveda.",
+  "setup_vault_create_button": "Crear y Proteger",
+  "setup_vault_loading_button": "Creando...",
+  "unlock_title": "Desbloquear Cognit λ",
+  "unlock_desc": "Introduce tu contraseña o PIN para continuar.",
+  "unlock_placeholder": "Contraseña / PIN",
+  "unlock_button": "Desbloquear",
+  "unlock_loading_button": "Desbloqueando...",
+  "unlock_forgot_pass_button": "Olvidé mi contraseña (borrar datos)",
+  "unlock_error_nopass": "Introduce la contraseña",
+  "unlock_error_locked": "Demasiados intentos fallidos. Bloqueado hasta {{time}}",
+  "unlock_error_wrong_pass": "Contraseña incorrecta. Intentos restantes: {{attempts}}",
+  "unlock_error_unknown": "Error desconocido al desbloquear.",
+  "unlock_wipe_confirm": "¿Estás seguro de que quieres borrar todos tus datos locales? Esta acción es irreversible.",
+  "meditation_title": "Meditación Guiada",
+  "meditation_desc": "Selecciona un tipo y duración para comenzar.",
+  "meditation_select_type_placeholder": "Seleccionar tipo",
+  "meditation_type_breathing": "Respiración",
+  "meditation_type_body_scan": "Escaneo Corporal",
+  "meditation_select_duration_placeholder": "Seleccionar duración",
+  "meditation_duration_1_min": "1 minuto",
+  "meditation_duration_5_min": "5 minutos",
+  "meditation_duration_10_min": "10 minutos",
+  "meditation_duration_15_min": "15 minutos",
+  "meditation_instruction_breathing": "Concéntrate en tu respiración. Inhala lentamente, exhala lentamente.",
+  "meditation_instruction_body_scan": "Lleva tu atención a cada parte de tu cuerpo, desde los pies hasta la cabeza.",
+  "meditation_start_button": "Iniciar",
+  "meditation_pause_button": "Pausar",
+  "meditation_reset_button": "Reiniciar",
+  "meditation_session_complete_title": "Meditación Completada",
+  "meditation_session_complete_desc": "Has completado una sesión de {{duration}} minutos. ¡Bien hecho!",
+  "meditation_journal_note": "Completé una sesión de meditación de {{type}} de {{duration}} minutos.",
+  "meditation_journal_emotion": "Calma",
+  "proactive_activation_title": "Energía Baja Detectada",
+  "proactive_activation_desc": "Un buen momento para contrarrestar la inercia es ahora. ¿Te gustaría planificar una actividad energizante?",
+  "proactive_activation_action": "Ir a Activación Conductual",
+  "pleasure_mastery_balance_title": "Balance Placer/Dominio",
+  "pleasure_mastery_balance_desc": "¿Estás equilibrando actividades que te dan placer con las que te dan sensación de logro?",
+  "pleasure_mastery_insight_pleasure": "Insight: Tu semana está muy enfocada en el placer. Considera añadir una actividad que te dé sensación de dominio.",
+  "pleasure_mastery_insight_mastery": "Insight: Tu semana está muy enfocada en el dominio. Recuerda planificar tiempo para actividades que simplemente te den placer.",
+  "pleasure_mastery_insight_balance": "Insight: Tienes un buen equilibrio entre placer y dominio. ¡Sigue así!",
+  "erp_advanced_section_title": "ERP Avanzado (para TOC/Ansiedad)",
+  "erp_catastrophic_prediction_label": "Predicción Catastrófica",
+  "erp_catastrophic_prediction_placeholder": "¿Qué es lo peor que temes que suceda?",
+  "erp_real_outcome_label": "Resultado Real",
+  "erp_real_outcome_placeholder": "¿Qué sucedió realmente?",
+  "erp_safety_behaviors_label": "Conductas de Seguridad/Compulsiones Evitadas",
+  "erp_safety_behaviors_placeholder": "Ej. No revisé la puerta, no me lavé las manos...",
+  "erp_catastrophic_prediction_label_short": "Predicción",
+  "erp_real_outcome_label_short": "Realidad",
+  "erp_safety_behaviors_avoided_short": "Compulsiones evitadas",
+  "delete_button": "Eliminar",
+  "delete_entry_confirm_title": "¿Estás seguro de que quieres eliminar esta entrada?",
+  "delete_entry_confirm_desc": "Esta acción no se puede deshacer.",
+  "goal_edit_title": "Editar Meta",
+  "goal_modal_title": "Crear una Nueva Meta SMART",
+  "goal_new_button": "Nueva Meta",
+  "goal_step_title_desc": "Crea y rastrea tus metas SMART",
+  "goal_associate_placeholder": "Seleccionar una entrada",
+  "validation_error_title": "Error de Validación",
+  "goal_associate_label": "Asociar con una entrada del diario (opcional)",
+  "goal_associate_none": "No asociar",
+  "entry_generic": "Entrada",
+  "sleep": {
+    "title": "Diario de Sueño (TCC-I)",
+    "desc": "Registra tus hábitos de sueño para mejorar su calidad y eficiencia.",
+    "bedTime": "Hora de acostarse",
+    "wakeTime": "Hora de despertar",
+    "latencyMin": "Latencia del sueño (min)",
+    "awakenings": "N.º de despertares",
+    "awakeMinutes": "Tiempo despierto (min)",
+    "quality": "Calidad del sueño",
+    "notes_placeholder": "¿Tomaste cafeína? ¿Hiciste ejercicio? ¿Algo te preocupaba?",
+    "chart": {
+      "title": "Tendencia del Sueño",
+      "desc": "Visualiza la evolución de tu eficiencia y calidad de sueño.",
+      "low_efficiency_tip": "Eficiencia por debajo del 80%. Revisa los consejos de higiene del sueño."
+    },
+    "efficiency": "Eficiencia del Sueño",
+    "no_data_chart": "Registra tus noches para ver el gráfico de progreso.",
+    "history": {
+      "title": "Historial de Sueño Reciente",
+      "none": "Aún no hay registros de sueño."
+    },
+    "toast": {
+      "saved": {
+        "title": "Diario de sueño guardado",
+        "desc": "Tu eficiencia de sueño fue del {{value}}%."
+      }
+    },
+    "validation": {
+      "anomalous_values": "Valores anómalos: el tiempo despierto no puede ser mayor que el tiempo en cama.",
+      "short_tib": "El tiempo en cama es demasiado corto. Por favor verifica las horas ingresadas."
+    }
+  },
+  "goals": {
+    "title": "Metas SMART",
+    "description": "Crea y rastrea tus metas terapéuticas",
+    "filter": "Filtrar",
+    "all": "Todas",
+    "in_progress": "En Progreso",
+    "completed": "Completadas",
+    "overdue": "Vencidas",
+    "edit": "Editar",
+    "complete": "Marcar como Completada",
+    "delete": "Eliminar",
+    "link_to_journal": "Vincular a Entrada del Diario",
+    "no_goals": "¡Aún no hay metas. Crea una para empezar!",
+    "measurement": "Medición",
+    "priority": "Prioridad",
+    "difficulty": "Dificultad",
+    "toast_created": "¡Meta creada!",
+    "toast_updated": "Meta actualizada.",
+    "toast_deleted": "Meta eliminada.",
+    "toast_completed": "🎉 ¡Meta Completada! ¡Bien hecho!",
+    "toast_linked": "Meta vinculada a la entrada del diario.",
+    "title_label": "Título",
+    "description_label": "Descripción (Más detalles)",
+    "relevance_label": "¿Por qué es importante?",
+    "target_date_label": "Fecha Objetivo",
+    "priority_low": "Baja",
+    "priority_medium": "Media",
+    "priority_high": "Alta",
+    "progress_label": "Progreso Actual (%)",
+    "progress": "Progreso",
+    "update_button": "Actualizar Meta",
+    "save_button": "Guardar Meta",
+    "title_placeholder": "Ej. Caminar 30 min diarios",
+    "description_placeholder": "Lo que harás específicamente",
+    "measurement_placeholder": "Ej. 10 páginas, 30 min",
+    "relevance_placeholder": "Ej. Para reducir la ansiedad",
+    "specific": "Específico",
+    "measurable": "Medible",
+    "achievable": "Alcanzable",
+    "relevant": "Relevante",
+    "time_bound": "Con Tiempo definido",
+    "new_button": "Nueva Meta",
+    "more_options": "Más opciones",
+    "validation_error_desc": "Por favor completa todos los campos requeridos: Título, Medición y Fecha Objetivo.",
+    "status_in-progress": "En Progreso",
+    "status_completed": "Completada",
+    "status_overdue": "Vencida"
+  },
+  "tours": {
+    "journal": {
+      "id": "journal",
+      "steps": [
+        {
+          "id": "j-1",
+          "targetSelector": "[data-tour='journal-new']",
+          "title": "Nueva sesión",
+          "body": "Pulsa \"Nueva sesión\" y elige L1/L2/L3 según lo que quieras trabajar hoy.",
+          "placement": "bottom",
+          "requireAction": true
+        },
+        {
+          "id": "j-2",
+          "targetSelector": "[data-tour='journal-link-goal']",
+          "title": "Vincula con Objetivos",
+          "body": "Puedes vincular una entrada con un objetivo para relacionar pensamiento y acción.",
+          "placement": "right"
+        }
+      ]
+    },
+    "activation": {
+      "id": "activation",
+      "steps": [
+        {
+          "id": "a-1",
+          "targetSelector": "[data-tour='add-value-button']",
+          "title": "Define tus Valores",
+          "body": "Empieza por añadir los valores que son importantes para ti (ej. \"Salud\", \"Conexión\").",
+          "placement": "bottom"
+        },
+        {
+          "id": "a-2",
+          "targetSelector": "[data-tour='add-activity-button']",
+          "title": "Crea Actividades",
+          "body": "Luego, crea actividades que te energicen y se alineen con esos valores.",
+          "placement": "bottom"
+        }
+      ]
+    },
+    "goals": {
+      "id": "goals",
+      "steps": [
+        {
+          "id": "g-1",
+          "targetSelector": "[data-tour='goals-create']",
+          "title": "Crear un Objetivo",
+          "body": "Pulsa \"+\" para crear un Objetivo SMART. Empieza por el modo rápido si es la primera vez.",
+          "requireAction": true,
+          "placement": "top"
+        },
+        {
+          "id": "g-2",
+          "targetSelector": "[data-tour='goals-card']",
+          "title": "Progreso y estado",
+          "body": "Las tarjetas muestran barra de progreso, prioridad y dificultad. Pulsa \"...\" para editar o vincular al diario.",
+          "placement": "top"
+        }
+      ]
+    },
+    "exposure": {
+      "id": "exposure",
+      "steps": [
+        {
+          "id": "e-1",
+          "targetSelector": "[data-tour='add-fear-item-button']",
+          "title": "Crea tu Jerarquía",
+          "body": "Añade situaciones que te causan ansiedad, de menor a mayor intensidad.",
+          "placement": "bottom"
+        },
+        {
+          "id": "e-2",
+          "targetSelector": "[data-tour='log-exposure-button']",
+          "title": "Registra una Exposición",
+          "body": "Cuando te enfrentes a un miedo, regístralo aquí para ver cómo tu ansiedad disminuye.",
+          "placement": "left"
+        }
+      ]
+    },
+    "wellness": {
+      "id": "wellness",
+      "steps": [
+        {
+          "id": "w-1",
+          "targetSelector": "[data-tour='gratitude-journal-card']",
+          "title": "Diario de Gratitud",
+          "body": "Anota 3 cosas buenas cada día para entrenar a tu cerebro a ver lo positivo.",
+          "placement": "bottom"
+        },
+        {
+          "id": "w-2",
+          "targetSelector": "[data-tour='sleep-diary-card']",
+          "title": "Diario de Sueño",
+          "body": "Registra tus noches para analizar y mejorar la calidad de tu descanso.",
+          "placement": "top"
+        }
+      ]
+    }
+  }
 }

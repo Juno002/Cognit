@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Mic } from "lucide-react";
-import { useTranslation } from "@/hooks/use-translation.tsx";
+import { useTranslation } from "@/hooks/use-translation";
 
 
 const HelpSection: React.FC<{title: string, children: React.ReactNode}> = ({ title, children }) => (

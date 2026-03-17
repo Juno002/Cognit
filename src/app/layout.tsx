@@ -4,7 +4,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Poppins } from 'next/font/google';
-import { TranslationProvider } from '@/hooks/use-translation.tsx';
+import { TranslationProvider } from '@/hooks/use-translation';
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { VaultProvider } from '@/context/vault/VaultProvider';
 import { Toaster } from "@/components/ui/toaster";

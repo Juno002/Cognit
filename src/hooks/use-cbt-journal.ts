@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisContact, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState } from '@/types';
+import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisContact, CrisisConfig, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState } from '@/types';
 import { todayISO, calculateICC, normalizeText } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH, MIN_SESSIONS_FOR_ANALYSIS, RUMINATION_THRESHOLD, ROWS_PER_PAGE, BACKUP_REMINDER_DAYS } from '@/lib/constants';
 import { detectCognitiveDistortions } from '@/lib/distortions';
@@ -43,10 +43,7 @@ export interface JournalAnalysis {
     pleasureMasteryBalance: { totalActivities: number; avgPleasure: number; avgMastery: number; insight: string | null; };
 }
 
-export interface CrisisConfig {
-    copingPhrase: string;
-    contacts: CrisisContact[];
-}
+export type TourSection = 'journal' | 'activation' | 'goals' | 'exposure' | 'wellness';
 
 export interface PaginationState {
     currentPage: number;
@@ -92,8 +89,8 @@ const calculateStats = (rows: ThoughtEntry[], goals: Goal[], t: (key: string, op
     
     const initialStats = {
       total: total, streak: 0, predominantLevel: '-', topEmotion: '-',
-      avgIntensity: 0, levelCount: {1:0, 2:0, 3:0}, emotionFreq: {}, tagFreq: {},
-      avgICC: null, totalL3: 0, distortionFreq: {} as Record<string, number>,
+      avgIntensity: 0, levelCount: {1:0, 2:0, 3:0} as Record<number, number>, emotionFreq: {} as Record<string, number>, tagFreq: {} as Record<string, number>,
+      avgICC: null as string | null, totalL3: 0, distortionFreq: {} as Record<string, number>,
       totalGoals: 0, completedGoals: 0,
     };
 
@@ -256,7 +253,14 @@ const detectPatterns = (rows: ThoughtEntry[], stats: JournalStats, t: (key: stri
     }
     // L3 stagnation
     const recentRows = rows.slice(0, 14);
-    const recentNegative = recentRows.filter(r => ['Ansioso', 'Triste', 'Irritado', 'Cansado', 'Anxious', 'Sad', 'Irritated', 'Tired'].includes(r.emotion)).length;
+    
+    // Check against localized negative emotions + legacy strings to preserve historical backwards compatibility
+    const allEmotions = (t('emotions') as unknown as {emoji: string, label: string}[]) || [];
+    const negativeEmotionsLabels = allEmotions.filter((_, i) => [1, 3, 4, 6].includes(i)).map(e => e.label);
+    const legacyNegative = ['Ansioso', 'Triste', 'Irritado', 'Cansado', 'Anxious', 'Sad', 'Irritated', 'Tired'];
+    const negativeSet = new Set([...negativeEmotionsLabels, ...legacyNegative]);
+    
+    const recentNegative = recentRows.filter(r => negativeSet.has(r.emotion)).length;
     const recentL3 = recentRows.filter(r => r.level === 3 && !r.__draft).length;
 
     if (recentNegative >= 8 && recentL3 === 0) {
@@ -564,7 +568,7 @@ export const useCbtJournal = () => {
 
     const completeTour = async (tourId: string) => {
         const currentData = vault.getData() || {} as VaultData;
-        const newTourState = { ...(currentData.config?.tourState || {}), [tourId]: { seen: true, completedAt: new Date().toISOString() }};
+        const newTourState = { ...(currentData.config?.tourState || {}), [tourId]: { seen: true, completedAt: new Date().toISOString() }} as TourState;
         const newConfig = { ...currentData.config, tourState: newTourState };
         await vault.setData({ ...currentData, config: newConfig });
         setTourState(newTourState);
@@ -870,10 +874,6 @@ export const useCbtJournal = () => {
         }
     };
     
-    const saveGoalAsDraft = async (draft: Partial<Goal>) => {
-        // This function would save an incomplete goal.
-        // For simplicity, we'll treat drafts as regular goals with potentially empty fields.
-    };
 
     const linkGoalToCbtEntry = async (goalId: string, entryId: string) => {
         const goal = goals.find((g) => g.id === goalId);
@@ -914,6 +914,9 @@ export const useCbtJournal = () => {
             tags: ['mindfulness', 'meditación', type],
             isMeditation: true,
             promptUsed: 'Guided Meditation',
+            situation: '',
+            automaticThought: '',
+            alternativeResponse: '',
         });
     };
 
@@ -962,7 +965,7 @@ export const useCbtJournal = () => {
         const currentData = vault.getData() || {} as VaultData;
         const newSleepEntries = [newEntry, ...(currentData.sleepEntries || [])];
         await updateFullState({ ...currentData, sleepEntries: newSleepEntries });
-        toast({ title: t('sleep.toast.saved.title'), description: t('sleep.toast.saved.desc', { value: newEntry.sleepEfficiencyPct.toFixed(0) }) });
+        toast({ title: t('sleep.toast.saved.title'), description: t('sleep.toast.saved.desc', { value: (newEntry.sleepEfficiencyPct ?? 0).toFixed(0) }) });
     };
     
     return {
@@ -972,7 +975,7 @@ export const useCbtJournal = () => {
         achievements,
         isLoading: isLoading || vault.locked,
         isSaving,
-        dbStatus: 'ok', // Simplified, vault handles its own state
+        dbStatus: 'ok' as const, // Simplified, vault handles its own state
         analysis,
         crisisConfig,
         crisisDetected,
@@ -1012,7 +1015,7 @@ export const useCbtJournal = () => {
         resetRumination,
         tourState,
         completeTour,
-        saveGoalAsDraft,
+
         linkGoalToCbtEntry,
         gratitudeEntries,
         addGratitudeEntry,

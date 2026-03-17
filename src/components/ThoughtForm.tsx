@@ -195,6 +195,10 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
     
     const entryData: ThoughtEntryData = {
         ...values,
+        situation: values.situation || '',
+        automaticThought: values.automaticThought || '',
+        alternativeResponse: values.alternativeResponse || '',
+        creativeLink: values.creativeLink || '',
         promptUsed: prompt,
         __draft: false,
     };

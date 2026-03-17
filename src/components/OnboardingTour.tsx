@@ -179,7 +179,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       </Popover.Anchor>
       <Popover.Portal>
         <Popover.Content
-          side={currentStep.placement}
+          side={currentStep.placement === 'center' ? 'top' : currentStep.placement}
           sideOffset={10}
           align="center"
           className="z-[102] w-72 rounded-lg bg-card p-4 shadow-2xl"

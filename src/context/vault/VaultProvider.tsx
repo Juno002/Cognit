@@ -19,6 +19,7 @@ export type VaultData = {
     gratitudeEntries: GratitudeEntry[];
     sleepEntries: SleepEntry[];
     config: {
+        [key: string]: any;
         crisisConfig: CrisisConfig;
         lastPrompt: string;
         ruminationCount: number;
@@ -126,8 +127,10 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [locked, lock]);
 
 
-  const createVault = useCallback(async (password: string, initialData: VaultData) => {
-    const dataString = JSON.stringify(initialData);
+  const createVault = useCallback(async (password: string, initialData?: VaultData) => {
+    const defaultData: VaultData = { cbtEntries: [], exposureState: { fearLadder: [], logs: [] }, activationState: { values: [], activities: [] }, achievements: [], goals: [], gratitudeEntries: [], sleepEntries: [], config: { crisisConfig: { copingPhrase: '', contacts: [] }, lastPrompt: '', ruminationCount: 0 } };
+    const vaultData = initialData ?? defaultData;
+    const dataString = JSON.stringify(vaultData);
     const compressed = pako.deflate(dataString);
     const encrypted = await encryptVault(compressed.buffer, password);
 
@@ -135,16 +138,16 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPkg(encrypted);
     setHasVault(true);
     setLocked(false);
-    setDataState(initialData);
+    setDataState(vaultData);
     setAttemptsLeft(ATTEMPT_LIMIT);
     failedAttemptsRef.current = 0;
     passwordRef.current = password;
   }, []);
 
   const unlock = useCallback(async (password: string) => {
-    if (!pkg) return { success: false, error: 'decryption' };
+    if (!pkg) return { success: false, error: 'decryption' as const };
 
-    if (lockedUntil && Date.now() < lockedUntil) return { success: false, error: 'locked' };
+    if (lockedUntil && Date.now() < lockedUntil) return { success: false, error: 'locked' as const };
 
     const decryptedBuffer = await decryptVault(pkg, password);
 
@@ -168,7 +171,7 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
            passwordRef.current = password;
            return { success: true };
         } catch (finalError) {
-             return { success: false, error: 'decryption' };
+             return { success: false, error: 'decryption' as const };
         }
       }
     } else {
@@ -179,9 +182,9 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const lockoutDuration = LOCK_BASE_MS * Math.pow(2, failedAttemptsRef.current - ATTEMPT_LIMIT);
         const newLockedUntil = Date.now() + lockoutDuration;
         setLockedUntil(newLockedUntil);
-        return { success: false, error: 'locked' };
+        return { success: false, error: 'locked' as const };
       }
-      return { success: false, error: 'decryption' };
+      return { success: false, error: 'decryption' as const };
     }
   }, [pkg, lockedUntil]);
 

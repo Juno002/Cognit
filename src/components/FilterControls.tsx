@@ -10,7 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { SlidersHorizontal, X } from 'lucide-react';
 import type { FilterState } from '@/types';
 import { todayISO } from '@/lib/utils';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface FilterControlsProps {
     filters: FilterState;

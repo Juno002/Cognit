@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { X, Download } from 'lucide-react';
 import { Button } from './ui/button';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

@@ -1,4 +1,3 @@
-
 {
   "locale": "en-US",
   "metadata_title": "Cognit λ",
@@ -164,21 +163,78 @@
     }
   },
   "emotions": [
-    { "emoji": "😌", "label": "Calm", "color": "#A7F3D0" },
-    { "emoji": "😰", "label": "Anxious", "color": "#FBBF24" },
-    { "emoji": "😊", "label": "Happy", "color": "#6EE7B7" },
-    { "emoji": "😔", "label": "Sad", "color": "#93C5FD" },
-    { "emoji": "😡", "label": "Irritated", "color": "#F87171" },
-    { "emoji": "🤔", "label": "Reflective", "color": "#C4B5FD" },
-    { "emoji": "😴", "label": "Tired", "color": "#A5B4FC" },
-    { "emoji": "🙏", "label": "Grateful", "color": "#FBCFE8" }
+    {
+      "emoji": "😌",
+      "label": "Calm",
+      "color": "#A7F3D0"
+    },
+    {
+      "emoji": "😰",
+      "label": "Anxious",
+      "color": "#FBBF24"
+    },
+    {
+      "emoji": "😊",
+      "label": "Happy",
+      "color": "#6EE7B7"
+    },
+    {
+      "emoji": "😔",
+      "label": "Sad",
+      "color": "#93C5FD"
+    },
+    {
+      "emoji": "😡",
+      "label": "Irritated",
+      "color": "#F87171"
+    },
+    {
+      "emoji": "🤔",
+      "label": "Reflective",
+      "color": "#C4B5FD"
+    },
+    {
+      "emoji": "😴",
+      "label": "Tired",
+      "color": "#A5B4FC"
+    },
+    {
+      "emoji": "🙏",
+      "label": "Grateful",
+      "color": "#FBCFE8"
+    }
   ],
-  "risk_keywords": ["suicide", "die", "disappear", "not worth it", "end it all", "harm myself", "stop existing", "last day"],
-  "default_crisis_line": { "name": "Samaritans (UK)", "number": "116 123", "code": "GB" },
+  "risk_keywords": [
+    "suicide",
+    "die",
+    "disappear",
+    "not worth it",
+    "end it all",
+    "harm myself",
+    "stop existing",
+    "last day"
+  ],
+  "default_crisis_line": {
+    "name": "Samaritans (UK)",
+    "number": "116 123",
+    "code": "GB"
+  },
   "extra_crisis_lines": [
-    { "name": "National Suicide Prevention Lifeline", "number": "988", "code": "US" },
-    { "name": "Línea de Ayuda (Spain)", "number": "024", "code": "ES" },
-    { "name": "Emergencias (Argentina)", "number": "135", "code": "AR" }
+    {
+      "name": "National Suicide Prevention Lifeline",
+      "number": "988",
+      "code": "US"
+    },
+    {
+      "name": "Línea de Ayuda (Spain)",
+      "number": "024",
+      "code": "ES"
+    },
+    {
+      "name": "Emergencias (Argentina)",
+      "number": "135",
+      "code": "AR"
+    }
   ],
   "distortions": [
     {
@@ -186,22 +242,54 @@
       "name": "Mental Filter",
       "description": "You focus on the negative aspects of a situation and ignore the positives.",
       "example": "I received a performance review with lots of praise, but I obsessed over the single negative comment.",
-      "keywords": ["terrible", "horrible", "disaster", "ruined"]
+      "keywords": [
+        "terrible",
+        "horrible",
+        "disaster",
+        "ruined"
+      ]
     },
     {
       "id": "polarized-thinking",
       "name": "Polarized Thinking (All-or-Nothing)",
       "description": "You see things in absolute, black-or-white terms. If something isn't perfect, it's a total failure.",
       "example": "If I don't get a perfect score on the exam, I'm a complete failure.",
-      "keywords": ["perfect", "total failure", "complete success", "absolute disaster", "useless", "genius"]
+      "keywords": [
+        "perfect",
+        "total failure",
+        "complete success",
+        "absolute disaster",
+        "useless",
+        "genius"
+      ]
     }
   ],
   "all_achievements_definitions": [
-    { "id": "consistency_3d", "emoji": "🟢", "name": "3-Day Streak" },
-    { "id": "consistency_7d", "emoji": "✨", "name": "Weekly Streak" },
-    { "id": "l3_first_use", "emoji": "🏆", "name": "First L3" },
-    { "id": "emotion_spectrum", "emoji": "🌈", "name": "Emotional Spectrum" },
-    { "id": "first_cbt_cycle", "emoji": "🔗", "name": "First CBT Cycle" }
+    {
+      "id": "consistency_3d",
+      "emoji": "🟢",
+      "name": "3-Day Streak"
+    },
+    {
+      "id": "consistency_7d",
+      "emoji": "✨",
+      "name": "Weekly Streak"
+    },
+    {
+      "id": "l3_first_use",
+      "emoji": "🏆",
+      "name": "First L3"
+    },
+    {
+      "id": "emotion_spectrum",
+      "emoji": "🌈",
+      "name": "Emotional Spectrum"
+    },
+    {
+      "id": "first_cbt_cycle",
+      "emoji": "🔗",
+      "name": "First CBT Cycle"
+    }
   ],
   "base_prompts_level_1": [
     "What thought visited you the most today and how do you notice it in your body?",
@@ -737,42 +825,109 @@
     "journal": {
       "id": "journal",
       "steps": [
-        { "id": "j-1", "targetSelector": "[data-tour='journal-new']", "title": "Nueva sesión", "body": "Pulsa 'Nueva sesión' y elige L1/L2/L3 según lo que quieras trabajar hoy.", "placement": "bottom", "requireAction": true },
-        { "id": "j-2", "targetSelector": "[data-tour='journal-link-goal']", "title": "Vincula con Objetivos", "body": "Puedes vincular una entrada con un objetivo para relacionar pensamiento y acción.", "placement": "right" }
+        {
+          "id": "j-1",
+          "targetSelector": "[data-tour='journal-new']",
+          "title": "Nueva sesión",
+          "body": "Pulsa 'Nueva sesión' y elige L1/L2/L3 según lo que quieras trabajar hoy.",
+          "placement": "bottom",
+          "requireAction": true
+        },
+        {
+          "id": "j-2",
+          "targetSelector": "[data-tour='journal-link-goal']",
+          "title": "Vincula con Objetivos",
+          "body": "Puedes vincular una entrada con un objetivo para relacionar pensamiento y acción.",
+          "placement": "right"
+        }
       ]
     },
     "activation": {
       "id": "activation",
       "steps": [
-        { "id": "a-1", "targetSelector": "[data-tour='add-value-button']", "title": "Define tus Valores", "body": "Empieza por añadir los valores que son importantes para ti (ej. 'Salud', 'Conexión').", "placement": "bottom" },
-        { "id": "a-2", "targetSelector": "[data-tour='add-activity-button']", "title": "Crea Actividades", "body": "Luego, crea actividades que te energicen y se alineen con esos valores.", "placement": "bottom" }
+        {
+          "id": "a-1",
+          "targetSelector": "[data-tour='add-value-button']",
+          "title": "Define tus Valores",
+          "body": "Empieza por añadir los valores que son importantes para ti (ej. 'Salud', 'Conexión').",
+          "placement": "bottom"
+        },
+        {
+          "id": "a-2",
+          "targetSelector": "[data-tour='add-activity-button']",
+          "title": "Crea Actividades",
+          "body": "Luego, crea actividades que te energicen y se alineen con esos valores.",
+          "placement": "bottom"
+        }
       ]
     },
     "goals": {
       "id": "goals",
       "steps": [
-        { "id": "g-1", "targetSelector": "[data-tour='goals-create']", "title": "Crear un Objetivo", "body": "Pulsa '+' para crear un Objetivo SMART. Empieza por el modo rápido si es la primera vez.", "requireAction": true, "placement": "top" },
-        { "id": "g-2", "targetSelector": "[data-tour='goals-card']", "title": "Progreso y estado", "body": "Las tarjetas muestran barra de progreso, prioridad y dificultad. Pulsa '...' para editar o vincular al diario.", "placement": "top" }
+        {
+          "id": "g-1",
+          "targetSelector": "[data-tour='goals-create']",
+          "title": "Crear un Objetivo",
+          "body": "Pulsa '+' para crear un Objetivo SMART. Empieza por el modo rápido si es la primera vez.",
+          "requireAction": true,
+          "placement": "top"
+        },
+        {
+          "id": "g-2",
+          "targetSelector": "[data-tour='goals-card']",
+          "title": "Progreso y estado",
+          "body": "Las tarjetas muestran barra de progreso, prioridad y dificultad. Pulsa '...' para editar o vincular al diario.",
+          "placement": "top"
+        }
       ]
     },
     "exposure": {
       "id": "exposure",
       "steps": [
-        { "id": "e-1", "targetSelector": "[data-tour='add-fear-item-button']", "title": "Crea tu Jerarquía", "body": "Añade situaciones que te causan ansiedad, de menor a mayor intensidad.", "placement": "bottom" },
-        { "id": "e-2", "targetSelector": "[data-tour='log-exposure-button']", "title": "Registra una Exposición", "body": "Cuando te enfrentes a un miedo, regístralo aquí para ver cómo tu ansiedad disminuye.", "placement": "left" }
+        {
+          "id": "e-1",
+          "targetSelector": "[data-tour='add-fear-item-button']",
+          "title": "Crea tu Jerarquía",
+          "body": "Añade situaciones que te causan ansiedad, de menor a mayor intensidad.",
+          "placement": "bottom"
+        },
+        {
+          "id": "e-2",
+          "targetSelector": "[data-tour='log-exposure-button']",
+          "title": "Registra una Exposición",
+          "body": "Cuando te enfrentes a un miedo, regístralo aquí para ver cómo tu ansiedad disminuye.",
+          "placement": "left"
+        }
       ]
     },
     "wellness": {
       "id": "wellness",
       "steps": [
-        { "id": "w-1", "targetSelector": "[data-tour='gratitude-journal-card']", "title": "Diario de Gratitud", "body": "Anota 3 cosas buenas cada día para entrenar a tu cerebro a ver lo positivo.", "placement": "bottom" },
-        { "id": "w-2", "targetSelector": "[data-tour='sleep-diary-card']", "title": "Diario de Sueño", "body": "Registra tus noches para analizar y mejorar la calidad de tu descanso.", "placement": "top" }
+        {
+          "id": "w-1",
+          "targetSelector": "[data-tour='gratitude-journal-card']",
+          "title": "Diario de Gratitud",
+          "body": "Anota 3 cosas buenas cada día para entrenar a tu cerebro a ver lo positivo.",
+          "placement": "bottom"
+        },
+        {
+          "id": "w-2",
+          "targetSelector": "[data-tour='sleep-diary-card']",
+          "title": "Diario de Sueño",
+          "body": "Registra tus noches para analizar y mejorar la calidad de tu descanso.",
+          "placement": "top"
+        }
       ]
     }
   },
   "delete_button": "Delete",
   "delete_entry_confirm_title": "Are you sure you want to delete this entry?",
-  "delete_entry_confirm_desc": "This action cannot be undone."
+  "delete_entry_confirm_desc": "This action cannot be undone.",
+  "toast_zip_error_title": "❌ Error creating the ZIP file",
+  "toast_export_fhir_title": "⚕️ Data exported to FHIR.",
+  "contextual_prompts_high_intensity": [
+    "It has been an intense day. What was the exact moment the emotion peaked?",
+    "Days like this are tough. What do you need to let go of before sleeping?",
+    "High emotional intensity is a learning opportunity. What triggered it?"
+  ]
 }
-
-  

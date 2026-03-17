@@ -121,7 +121,7 @@ const WellnessMode: React.FC<WellnessModeProps> = ({ gratitudeEntries, onAddGrat
             <div className="grid md:grid-cols-2 gap-6 items-start">
                 <GratitudeJournal onAddGratitude={handleAddGratitude} isSaving={isSavingGratitude} />
                 <DefusionGame onOpenJournal={() => onOpenJournal(true)} />
-                <GuidedMeditation onAddMeditation={onAddMeditation} />
+                <GuidedMeditation />
                 <GratitudeHistory entries={gratitudeEntries} t={t} />
             </div>
         </div>

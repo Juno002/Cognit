@@ -120,7 +120,8 @@ export default function Journal() {
   useEffect(() => {
     if (activeTab !== 'analysis' && tourState) {
         const tourForTab = activeTab as TourSection;
-        if (tourState[tourForTab]?.seen === false) {
+        const activeTourState = tourState[tourForTab];
+        if (typeof activeTourState === 'object' && activeTourState?.seen === false) {
             // Use a timeout to ensure the UI has rendered before starting the tour
             setTimeout(() => {
               const rawTourData = t(`tours.${tourForTab}`);

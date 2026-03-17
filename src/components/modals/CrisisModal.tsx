@@ -11,11 +11,11 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import type { CrisisConfig } from '@/hooks/use-cbt-journal';
+import type { CrisisConfig } from '@/types';
 import { escapeHtml } from '@/lib/utils';
 import { Button } from '../ui/button';
 import BreathingGuide from '../BreathingGuide';
-import { useTranslation } from '@/hooks/use-translation.tsx';
+import { useTranslation } from '@/hooks/use-translation';
 
 const CrisisModal: React.FC<{
     isOpen: boolean;
@@ -105,7 +105,7 @@ const CrisisModal: React.FC<{
                             🌬️ {t('breathing_guide_button')}
                         </Button>
                     )}
-                    <AlertDialogAction onClick={handleClose} className="w-full sm:w-auto mt-2 sm:mt-0" size="lg">
+                    <AlertDialogAction onClick={handleClose} className="w-full sm:w-auto mt-2 sm:mt-0">
                         ✅ {t('understood_button')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
