@@ -7,7 +7,7 @@ import DailySummary from '@/components/DailySummary';
 import ThoughtForm from '@/components/ThoughtForm';
 import ThoughtList from '@/components/ThoughtList';
 import { useCbtJournal, TourSection } from '@/hooks/use-cbt-journal';
-import type { ThoughtEntryData, ThoughtEntryFormData, Tour, TourStep } from '@/types';
+import type { ThoughtEntryData, ThoughtEntryFormData, Tour, TourStep, ClinicalProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { AchievementPill } from '@/components/AchievementPill';
 import AnalysisDashboard from '@/components/AnalysisDashboard';
@@ -26,10 +26,13 @@ import { Dialog } from '@/components/ui/dialog';
 import { Loader2, Target, BookText, Zap, HeartPulse, BarChartHorizontalBig, Plus } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { OnboardingTour } from '@/components/OnboardingTour';
+import { ClinicalOnboarding } from '@/components/ClinicalOnboarding';
 import PrintReport from '@/components/PrintReport';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getReflejoState } from '@/lib/reflejo';
+import ReflejoAvatar from '@/components/ReflejoAvatar';
 
 
 type ActiveTab = 'cbt-journal' | 'activation' | 'goals' | 'exposure' | 'wellness';
@@ -92,12 +95,16 @@ export default function Journal() {
     ruminationState,
     resetRumination,
     tourState,
+    showTours,
+    setShowTours,
     completeTour,
     addGratitudeEntry,
     gratitudeEntries,
     addMeditationEntry,
     sleepEntries,
     addSleepEntry,
+    clinicalProfile,
+    setClinicalProfile,
   } = useCbtJournal();
 
   const { t } = useTranslation();
@@ -118,7 +125,7 @@ export default function Journal() {
   }, [tourState]);
 
   useEffect(() => {
-    if (activeTab !== 'analysis' && tourState) {
+    if (activeTab !== 'analysis' && tourState && showTours) {
         const tourForTab = activeTab as TourSection;
         const activeTourState = tourState[tourForTab];
         if (typeof activeTourState === 'object' && activeTourState?.seen === false) {
@@ -170,22 +177,27 @@ export default function Journal() {
     try {
         const result = await addNewEntry(data);
         
+        const reflejo = getReflejoState(stats, analysis, t, { 
+            intensity: data.intensity,
+            clinicalProfile,
+        });
+
         if (result.reclassifiedLevel) {
             toast({
                 title: t('toast_reclassified_title'),
-                description: t('toast_reclassified_desc', { level: result.reclassifiedLevel }),
+                description: `${reflejo.message} (${t('toast_reclassified_desc', { level: result.reclassifiedLevel })})`,
                 variant: 'default'
             });
         } else if (result.distortions.length > 0) {
             toast({
                 title: t('toast_distortion_title'),
-                description: t('toast_distortion_desc', { distortion: result.distortions[0].name }),
+                description: `${reflejo.message} — ${t('toast_distortion_desc', { distortion: result.distortions[0].name })}`,
                 duration: 6000,
             });
         } else {
              toast({
                 title: t('toast_session_saved_title'),
-                description: t('toast_session_saved_desc'),
+                description: reflejo.message,
             });
         }
        
@@ -413,6 +425,17 @@ export default function Journal() {
       setActiveTour(null);
   };
 
+  const handleClinicalProfileComplete = async (profile: ClinicalProfile) => {
+    await setClinicalProfile(profile);
+    if (profile !== 'unspecified') {
+        const profileLabel = t(`onboarding_quiz.option_${profile}`);
+        toast({
+            title: t('onboarding_quiz.profile_applied_title'),
+            description: t('onboarding_quiz.profile_applied_desc', { profile: profileLabel }),
+        });
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
         case 'cbt-journal':
@@ -453,7 +476,7 @@ export default function Journal() {
                         onAddSleepEntry={addSleepEntry}
                    />;
         case 'analysis':
-            return <AnalysisDashboard analysis={analysis} stats={stats} entries={entries} />;
+            return <AnalysisDashboard analysis={analysis} stats={stats} entries={entries} clinicalProfile={clinicalProfile} />;
         default:
             return null;
     }
@@ -470,6 +493,9 @@ export default function Journal() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      {clinicalProfile === undefined && (
+        <ClinicalOnboarding onComplete={handleClinicalProfileComplete} />
+      )}
       <OnboardingTour activeTour={activeTour} onComplete={handleTourComplete} visible={!!activeTour} onClose={() => setActiveTour(null)} />
       {isPrinting && <PrintReport entries={entries.slice(0, 20)} stats={stats} t={t} />}
       <div id="app-content">
@@ -514,6 +540,7 @@ export default function Journal() {
           formRef={formRef} 
           onOpenChange={setIsFormOpen}
           onNavigateToAction={() => handleNavigate('activation', { action: 'openActivityForm', payload: { name: formRef.current?.getValues('note') } })}
+          clinicalProfile={clinicalProfile}
         />
       </Dialog>
       

@@ -1,24 +1,26 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Lightbulb, Star, Trophy } from 'lucide-react';
-import { BarChart, PieChart, LineChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Pie, Cell, Line, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Lightbulb, Star, Trophy, Sparkles } from 'lucide-react';
+import { BarChart, PieChart, LineChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Pie, Cell, Line, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area } from 'recharts';
 import type { JournalStats, JournalAnalysis } from '@/hooks/use-cbt-journal';
 import { MIN_SESSIONS_FOR_ANALYSIS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import type { ThoughtEntry } from '@/types';
+import type { ThoughtEntry, ClinicalProfile } from '@/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
+import { getReflejoState } from '@/lib/reflejo';
+import ReflejoAvatar from '@/components/ReflejoAvatar';
 
 interface AnalysisDashboardProps {
   analysis: JournalAnalysis;
   stats: JournalStats;
   entries: ThoughtEntry[];
+  clinicalProfile?: ClinicalProfile;
 }
 
 const CustomTooltip = ({ active, payload, label, t }: any) => {
@@ -38,7 +40,7 @@ const CustomTooltip = ({ active, payload, label, t }: any) => {
 };
 
 
-const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, entries }) => {
+const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, entries, clinicalProfile }) => {
   const { t } = useTranslation();
   entries = entries || []; // Ensure entries is always an array
   const [comparisonDays, setComparisonDays] = useState('7');
@@ -96,18 +98,30 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
     { subject: t('activation_mastery_label_short'), value: analysis.pleasureMasteryBalance.avgMastery, fullMark: 10 },
   ];
 
+  const reflejo = getReflejoState(stats, analysis, t, { clinicalProfile });
+
   return (
     <div className="space-y-6">
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-primary/5 border-primary/20 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4">
+                <ReflejoAvatar mode={reflejo.mode} size={60} />
+            </div>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary"><Lightbulb />{t('main_insight_title')}</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                    <Sparkles className="h-5 w-5" />
+                    {reflejo.mode === 'mentor' ? 'Reflejo (Mentor)' : 'Reflejo'}
+                </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 pr-20">
+                <p className="font-medium text-lg text-primary/80 italic">"{reflejo.message}"</p>
                 {stats.avgICC && (
-                    <p className="font-bold text-lg text-icc-metric">{t('avg_icc_label')}: {stats.avgICC}</p>
+                    <div className="flex items-center gap-2 mt-4">
+                        <span className="text-sm font-semibold">{t('avg_icc_label')}:</span>
+                        <span className="font-bold text-xl text-icc-metric">{stats.avgICC}</span>
+                    </div>
                 )}
                 {analysis.insight && (
-                    <p className="text-muted-foreground">{analysis.insight}</p>
+                    <p className="text-sm text-muted-foreground mt-2 border-t pt-2">{analysis.insight}</p>
                 )}
             </CardContent>
         </Card>
@@ -253,7 +267,7 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
                                     <span className={cn("font-bold", colorClass)}>{item.avgICC}</span>
                                     <span className="text-xs text-muted-foreground">({item.count} L3)</span>
                                   </div>
-                               </div>
+                                </div>
                            )
                       })}
                   </div>
@@ -314,6 +328,65 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
               ) : (
                    <p className="text-center text-sm text-muted-foreground">{t('main_triggers_insufficient_data')}</p>
               )}
+          </CardContent>
+      </Card>
+
+      {/* Círculo Virtuoso Correlation */}
+      <Card className="border-primary/30 shadow-md">
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Sparkles className="text-secondary" />{t('analysis_virtuous_circle_title')}</CardTitle>
+              <CardDescription>{t('analysis_virtuous_circle_desc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={analysis.virtuousCircle}>
+                          <defs>
+                              <linearGradient id="colorSleep" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(var(--icc-metric))" stopOpacity={0.1}/>
+                                  <stop offset="95%" stopColor="hsl(var(--icc-metric))" stopOpacity={0}/>
+                              </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
+                          <XAxis dataKey="date" fontSize={11} tickLine={false} axisLine={false} />
+                          <YAxis yAxisId="left" domain={[0, 10]} hide />
+                          <YAxis yAxisId="right" orientation="right" hide />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                            itemStyle={{ fontSize: '12px' }}
+                          />
+                          <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }} />
+                          <Area 
+                            yAxisId="right"
+                            type="monotone" 
+                            dataKey="sleep" 
+                            name={t('analysis_virtuous_circle_sleep_label')} 
+                            stroke="hsl(var(--icc-metric))" 
+                            fillOpacity={1} 
+                            fill="url(#colorSleep)" 
+                            strokeWidth={1}
+                          />
+                          <Bar 
+                            yAxisId="right"
+                            dataKey="activity" 
+                            name={t('analysis_virtuous_circle_activity_label')} 
+                            fill="hsl(var(--secondary))" 
+                            radius={[2, 2, 0, 0]} 
+                            barSize={20}
+                          />
+                          <Line 
+                            yAxisId="left"
+                            type="monotone" 
+                            dataKey="mood" 
+                            name={t('analysis_virtuous_circle_mood_label')} 
+                            stroke="hsl(var(--primary))" 
+                            strokeWidth={3} 
+                            dot={{ fill: 'hsl(var(--primary))' }}
+                            activeDot={{ r: 6 }} 
+                          />
+                      </AreaChart>
+                  </ResponsiveContainer>
+              </div>
           </CardContent>
       </Card>
 
@@ -378,5 +451,3 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
 };
 
 export default AnalysisDashboard;
-
-    

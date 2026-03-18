@@ -139,6 +139,36 @@ const HelpModal = () => {
               </AccordionContent>
           </AccordionItem>
 
+           <AccordionItem value="item-10">
+            <AccordionTrigger className="text-lg font-semibold">🧩 {t('help_downward_arrow_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('help_downward_arrow_subtitle')}>
+                    <p>{t('help_downward_arrow_p1')}</p>
+                    <p>{t('help_downward_arrow_p2')}</p>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-11">
+            <AccordionTrigger className="text-lg font-semibold">📏 {t('help_task_splitter_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('help_task_splitter_subtitle')}>
+                    <p>{t('help_task_splitter_p1')}</p>
+                    <p>{t('help_task_splitter_p2')}</p>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-12">
+            <AccordionTrigger className="text-lg font-semibold">🎡 {t('help_virtuous_circle_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('help_virtuous_circle_subtitle')}>
+                    <p>{t('help_virtuous_circle_p1')}</p>
+                    <p>{t('help_virtuous_circle_p2')}</p>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="item-4">
             <AccordionTrigger className="text-lg font-semibold">{t('help_section4_title')}</AccordionTrigger>
             <AccordionContent>
@@ -151,6 +181,15 @@ const HelpModal = () => {
                          <li><strong>{t('help_section4_l5_title')}</strong> {t('help_section4_l5_desc')}</li>
                     </ul>
                      <p className="font-bold text-destructive">{t('help_section4_warning')}</p>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-13">
+            <AccordionTrigger className="text-lg font-semibold text-destructive">⚖️ {t('clinical_disclaimer_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('clinical_disclaimer_title')}>
+                    <p className="font-bold">{t('clinical_disclaimer_body')}</p>
                 </HelpSection>
             </AccordionContent>
           </AccordionItem>

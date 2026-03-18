@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisContact, CrisisConfig, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState } from '@/types';
+import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisContact, CrisisConfig, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState, ClinicalProfile } from '@/types';
 import { todayISO, calculateICC, normalizeText } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH, MIN_SESSIONS_FOR_ANALYSIS, RUMINATION_THRESHOLD, ROWS_PER_PAGE, BACKUP_REMINDER_DAYS } from '@/lib/constants';
 import { detectCognitiveDistortions } from '@/lib/distortions';
@@ -41,6 +41,7 @@ export interface JournalAnalysis {
     distortionFreq: { name: string; count: number }[];
     insight: string | null;
     pleasureMasteryBalance: { totalActivities: number; avgPleasure: number; avgMastery: number; insight: string | null; };
+    virtuousCircle: { date: string; mood: number | null; sleep: number | null; activity: number; }[];
 }
 
 export type TourSection = 'journal' | 'activation' | 'goals' | 'exposure' | 'wellness';
@@ -84,7 +85,7 @@ const calculateStreak = (rows: ThoughtEntry[]): number => {
 };
 
 
-const calculateStats = (rows: ThoughtEntry[], goals: Goal[], t: (key: string, options?: any) => any): JournalStats & { distortionFreq: {name: string, count: number}[] } => {
+const calculateStats = (rows: ThoughtEntry[], goals: Goal[], t: (key: string, options?: any) => any, clinicalProfile?: ClinicalProfile): JournalStats & { distortionFreq: {name: string, count: number}[] } => {
     const total = rows.length;
     
     const initialStats = {
@@ -125,7 +126,7 @@ const calculateStats = (rows: ThoughtEntry[], goals: Goal[], t: (key: string, op
         }
         
         if (r.automaticThought) {
-          const detected = detectCognitiveDistortions(r.automaticThought, t);
+          const detected = detectCognitiveDistortions(r.automaticThought, t, clinicalProfile);
           detected.forEach(d => {
               initialStats.distortionFreq[d.name] = (initialStats.distortionFreq[d.name] || 0) + 1;
           });
@@ -380,7 +381,7 @@ export const useCbtJournal = () => {
 
     // These states hold the current session's data
     const [allEntries, setAllEntries] = useState<ThoughtEntry[]>([]);
-    const [stats, setStats] = useState<JournalStats>(calculateStats([], [], t));
+    const [stats, setStats] = useState<JournalStats>(calculateStats([], [], t, undefined));
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [crisisConfig, setCrisisConfig] = useState<CrisisConfig>({ copingPhrase: '', contacts: [] });
     const [exposureState, setExposureState] = useState<ExposureState>({ fearLadder: [], logs: [] });
@@ -391,6 +392,8 @@ export const useCbtJournal = () => {
     const [ruminationState, setRuminationState] = useState({ count: 0, isRuminationBlocked: false });
     const [lastPrompt, setLastPrompt] = useState('');
     const [tourState, setTourState] = useState<TourState | undefined>(undefined);
+    const [showTours, setShowToursState] = useState<boolean>(true);
+    const [clinicalProfile, setClinicalProfileState] = useState<ClinicalProfile | undefined>(undefined);
     
     // UI/Flow states
     const [isLoading, setIsLoading] = useState(true);
@@ -429,19 +432,22 @@ export const useCbtJournal = () => {
                 const goalsData = (data.goals || []).map(g => ({ ...g, status: getGoalStatus(g) }));
                 setGoals(goalsData);
                 
-                const newStats = calculateStats(sortedEntries, goalsData, t);
+                const config = data.config || {};
+                const currentProfile = config.clinicalProfile;
+                setClinicalProfileState(currentProfile);
+
+                const newStats = calculateStats(sortedEntries, goalsData, t, currentProfile);
                 setStats(newStats);
 
                 const storedAchievements = data.achievements || [];
                 setAchievements(storedAchievements);
 
-                const config = data.config || {};
                 const phrase = config.crisisConfig?.copingPhrase || t('default_coping_phrase');
                 const contacts = config.crisisConfig?.contacts || [];
                 setCrisisConfig({ copingPhrase: phrase, contacts });
 
                 const lastPromptFromDB = config[`lastPrompt_${locale}`];
-                setLastPrompt(lastPromptFromDB || getContextualPrompt(1, newStats, t));
+                setLastPrompt(lastPromptFromDB || getContextualPrompt(1, newStats, t, currentProfile));
 
                 const exposureData = data.exposureState || { fearLadder: [], logs: [] };
                 setExposureState(exposureData);
@@ -460,6 +466,8 @@ export const useCbtJournal = () => {
                 
                 const initialTourState = { journal: { seen: false }, activation: { seen: false }, goals: { seen: false }, exposure: { seen: false }, wellness: { seen: false }};
                 setTourState(config.tourState || initialTourState);
+                setShowToursState(config.showTours !== false);
+                setClinicalProfileState(config.clinicalProfile);
 
                 // Backup reminder logic
                 const lastBackupDateStr = localStorage.getItem('lastBackupDate'); 
@@ -522,7 +530,7 @@ export const useCbtJournal = () => {
     };
 
     const analysis: JournalAnalysis = useMemo(() => {
-        const currentStats = calculateStats(allEntries, goals, t);
+        const currentStats = calculateStats(allEntries, goals, t, clinicalProfile);
         const iccByEmotion = analyzeICCByEmotion(allEntries);
         return {
             triggers: analyzeTriggers(allEntries),
@@ -534,8 +542,49 @@ export const useCbtJournal = () => {
             distortionFreq: currentStats.distortionFreq,
             insight: generateInsight(currentStats, allEntries, t),
             pleasureMasteryBalance: analyzePleasureMasteryBalance(activationState.activities, t),
+            virtuousCircle: (() => {
+                const entriesByDate: Record<string, ThoughtEntry[]> = {};
+                allEntries.forEach(e => {
+                    if (!entriesByDate[e.date]) entriesByDate[e.date] = [];
+                    entriesByDate[e.date].push(e);
+                });
+                
+                const completedSubtasksByDate: Record<string, number> = {};
+                activationState.activities.forEach(act => {
+                    (act.subtasks || []).forEach(st => {
+                        if (st.completed && st.completedAt) {
+                            completedSubtasksByDate[st.completedAt] = (completedSubtasksByDate[st.completedAt] || 0) + 1;
+                        }
+                    });
+                });
+
+                const data = [];
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const dateStr = d.toISOString().split('T')[0];
+                    
+                    const dayEntries = entriesByDate[dateStr] || [];
+                    const avgIntensity = dayEntries.length > 0 
+                        ? dayEntries.reduce((sum, e) => sum + e.intensity, 0) / dayEntries.length 
+                        : null;
+                        
+                    const sleepEntry = sleepEntries.find(s => s.date === dateStr);
+                    const sleepEfficiency = sleepEntry?.sleepEfficiencyPct || null;
+                    
+                    const subtasksToday = completedSubtasksByDate[dateStr] || 0;
+                    
+                    data.push({
+                        date: dateStr.slice(5).replace('-', '/'),
+                        mood: avgIntensity,
+                        sleep: sleepEfficiency,
+                        activity: subtasksToday
+                    });
+                }
+                return data.reverse();
+            })(),
         }
-    }, [allEntries, goals, activationState.activities, t]);
+    }, [allEntries, goals, activationState.activities, sleepEntries, t]);
     
     const updateFullState = async (newData: Partial<VaultData>) => {
         const currentData = vault.getData() || {} as VaultData;
@@ -568,10 +617,18 @@ export const useCbtJournal = () => {
 
     const completeTour = async (tourId: string) => {
         const currentData = vault.getData() || {} as VaultData;
-        const newTourState = { ...(currentData.config?.tourState || {}), [tourId]: { seen: true, completedAt: new Date().toISOString() }} as TourState;
+        const tourConfig = currentData.config?.tourState || {};
+        const newTourState = { ...tourConfig, [tourId]: { seen: true, completedAt: new Date().toISOString() }} as TourState;
         const newConfig = { ...currentData.config, tourState: newTourState };
         await vault.setData({ ...currentData, config: newConfig });
         setTourState(newTourState);
+    };
+
+    const setShowTours = async (show: boolean) => {
+        const currentData = vault.getData() || {} as VaultData;
+        const newConfig = { ...currentData.config, showTours: show };
+        await vault.setData({ ...currentData, config: newConfig });
+        setShowToursState(show);
     };
 
     const addNewEntry = async (entryData: ThoughtEntryData) => {
@@ -603,7 +660,7 @@ export const useCbtJournal = () => {
 
 
             if (sanitizedEntryData.level === 3 && !sanitizedEntryData.__draft && sanitizedEntryData.automaticThought) {
-                detectedDistortions = detectCognitiveDistortions(sanitizedEntryData.automaticThought, t);
+                detectedDistortions = detectCognitiveDistortions(sanitizedEntryData.automaticThought, t, clinicalProfile);
             }
             
             const noteText = normalizeText(sanitizedEntryData.note) + ' ' + normalizeText(sanitizedEntryData.automaticThought);
@@ -803,9 +860,17 @@ export const useCbtJournal = () => {
     const toggleSubtask = (activityId: string, subtaskId: string) => {
         const newActivities = activationState.activities.map(a => {
             if (a.id === activityId) {
-                const newSubtasks = (a.subtasks || []).map(st => 
-                    st.id === subtaskId ? { ...st, completed: !st.completed } : st
-                );
+                const newSubtasks = (a.subtasks || []).map(st => {
+                    if (st.id === subtaskId) {
+                        const isCompleting = !st.completed;
+                        return { 
+                            ...st, 
+                            completed: isCompleting,
+                            completedAt: isCompleting ? todayISO() : undefined
+                        };
+                    }
+                    return st;
+                });
                 return { ...a, subtasks: newSubtasks };
             }
             return a;
@@ -967,6 +1032,13 @@ export const useCbtJournal = () => {
         await updateFullState({ ...currentData, sleepEntries: newSleepEntries });
         toast({ title: t('sleep.toast.saved.title'), description: t('sleep.toast.saved.desc', { value: (newEntry.sleepEfficiencyPct ?? 0).toFixed(0) }) });
     };
+
+    const setClinicalProfile = async (profile: ClinicalProfile) => {
+        const currentData = vault.getData() || {} as VaultData;
+        const config = currentData.config || {};
+        await updateFullState({ ...currentData, config: { ...config, clinicalProfile: profile }});
+        setClinicalProfileState(profile);
+    };
     
     return {
         cbtEntries: allEntries,
@@ -1014,7 +1086,11 @@ export const useCbtJournal = () => {
         ruminationState,
         resetRumination,
         tourState,
+        showTours,
+        setShowTours,
         completeTour,
+        clinicalProfile,
+        setClinicalProfile,
 
         linkGoalToCbtEntry,
         gratitudeEntries,

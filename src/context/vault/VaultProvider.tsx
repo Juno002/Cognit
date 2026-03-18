@@ -7,7 +7,7 @@ import type { CipherPackage } from "@/lib/client-crypto";
 import { loadVault, saveVault, wipeVault, saveRawVault } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/use-translation";
-import type { ExposureState, ActivationState, Achievement, CrisisConfig, Goal, GratitudeEntry, SleepEntry, TourState } from '@/types';
+import type { ExposureState, ActivationState, Achievement, CrisisConfig, Goal, GratitudeEntry, SleepEntry, TourState, ClinicalProfile } from '@/types';
 import pako from 'pako';
 
 export type VaultData = {
@@ -25,6 +25,8 @@ export type VaultData = {
         ruminationCount: number;
         tourCompleted?: boolean; // Legacy
         tourState?: TourState;
+        clinicalProfile?: ClinicalProfile;
+        showTours?: boolean;
     }
 };
 
@@ -128,7 +130,7 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 
   const createVault = useCallback(async (password: string, initialData?: VaultData) => {
-    const defaultData: VaultData = { cbtEntries: [], exposureState: { fearLadder: [], logs: [] }, activationState: { values: [], activities: [] }, achievements: [], goals: [], gratitudeEntries: [], sleepEntries: [], config: { crisisConfig: { copingPhrase: '', contacts: [] }, lastPrompt: '', ruminationCount: 0 } };
+    const defaultData: VaultData = { cbtEntries: [], exposureState: { fearLadder: [], logs: [] }, activationState: { values: [], activities: [] }, achievements: [], goals: [], gratitudeEntries: [], sleepEntries: [], config: { crisisConfig: { copingPhrase: '', contacts: [] }, lastPrompt: '', ruminationCount: 0, showTours: true } };
     const vaultData = initialData ?? defaultData;
     const dataString = JSON.stringify(vaultData);
     const compressed = pako.deflate(dataString);

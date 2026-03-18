@@ -77,13 +77,14 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ activity, initialName, valu
     const [valueId, setValueId] = useState(activity?.valueId || (values[0]?.id || ''));
     const [pleasure, setPleasure] = useState(activity?.pleasure || 5);
     const [mastery, setMastery] = useState(activity?.mastery || 5);
+    const [difficulty, setDifficulty] = useState(activity?.difficulty || 5);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (activity) {
-            onSubmit({ ...activity, name, valueId, pleasure, mastery });
+            onSubmit({ ...activity, name, valueId, pleasure, mastery, difficulty });
         } else {
-            onSubmit({ name, valueId, pleasure, mastery });
+            onSubmit({ name, valueId, pleasure, mastery, difficulty });
         }
         onClose();
     };
@@ -107,6 +108,10 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ activity, initialName, valu
             <div>
                 <Label>{t('activation_mastery_label', { value: mastery })}</Label>
                 <Slider value={[mastery]} onValueChange={([val]) => setMastery(val)} min={0} max={10} step={1} />
+            </div>
+            <div>
+                <Label>{t('activation_difficulty_label', { value: difficulty })}</Label>
+                <Slider value={[difficulty]} onValueChange={([val]) => setDifficulty(val)} min={1} max={10} step={1} />
             </div>
             <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="ghost">{t('cancel')}</Button></DialogClose>
@@ -135,6 +140,17 @@ const SubtaskList: React.FC<{
         }
     };
 
+    const handleAutoSplit = () => {
+        const microSteps = [
+            `Preparar materiales para: ${activity.name}`,
+            `Empezar solo 5 minutos de: ${activity.name}`,
+            `Completar primera fase de: ${activity.name}`,
+            `Revisar progreso de: ${activity.name}`
+        ];
+        microSteps.forEach(step => onAddSubtask(activity.id, step));
+        setIsExpanded(true);
+    };
+
     return (
         <div className="mt-2 space-y-2">
             <Progress value={progress} className="h-2" />
@@ -159,10 +175,24 @@ const SubtaskList: React.FC<{
                     </div>
                 </div>
             )}
-            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setIsExpanded(!isExpanded)}>
-                {isExpanded ? <ChevronsUp className="mr-2 h-4 w-4" /> : <ChevronsDown className="mr-2 h-4 w-4" />}
-                {t('activation_subtasks_button')} ({completedCount}/{subtasks.length})
-            </Button>
+            <div className="flex flex-col gap-2">
+                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setIsExpanded(!isExpanded)}>
+                    {isExpanded ? <ChevronsUp className="mr-2 h-4 w-4" /> : <ChevronsDown className="mr-2 h-4 w-4" />}
+                    {t('activation_subtasks_button')} ({completedCount}/{subtasks.length})
+                </Button>
+                
+                {(activity.difficulty || 0) >= 7 && subtasks.length === 0 && (
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full text-xs border-dashed border-primary text-primary hover:bg-primary/5"
+                        onClick={handleAutoSplit}
+                    >
+                        <Sparkles className="mr-2 h-3 w-3" />
+                        {t('activation_auto_split_button')}
+                    </Button>
+                )}
+            </div>
         </div>
     );
 };
@@ -325,6 +355,7 @@ const ActivationMode = ({ tabAction, onActionConsumed }: { tabAction: any; onAct
                                                         <div className="flex gap-4 text-sm mt-1">
                                                             <span title={t('activation_pleasure_label_short')}><Star className="inline-block h-4 w-4 text-yellow-400 mr-1" />{activity.pleasure}/10</span>
                                                             <span title={t('activation_mastery_label_short')}><Trophy className="inline-block h-4 w-4 text-green-500 mr-1" />{activity.mastery}/10</span>
+                                                            <span title={t('activation_difficulty_label_short')} className={activity.difficulty >= 7 ? 'text-red-500 font-medium' : ''}><Zap className="inline-block h-4 w-4 mr-1" />{activity.difficulty}/10</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-1">

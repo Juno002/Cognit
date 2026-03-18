@@ -108,6 +108,15 @@
   "settings_language_title": "🌐 Language",
   "settings_language_label": "Select Language",
   "settings_language_placeholder": "Select language...",
+  "settings_tab_general": "General",
+  "settings_tab_data": "Data",
+  "settings_tab_crisis": "Crisis",
+  "settings_tab_account": "Account",
+  "settings_dark_mode_label": "Dark Mode",
+  "settings_show_tours_label": "Show Help Tours",
+  "settings_show_tours_desc": "Enable visual guides in each section to learn how to use the tools.",
+  "settings_data_export_section": "Clinical Export",
+  "settings_data_mgmt_section": "Backup Management",
   "settings_daily_reminder_title": "🔔 Daily Reminder (Adherence)",
   "settings_daily_reminder_time": "Reminder Time",
   "settings_last_prompt": "Last registered prompt (will be used in the notification)",
@@ -160,7 +169,14 @@
     "validation": {
       "anomalous_values": "Anomalous values: Time awake cannot be greater than time in bed.",
       "short_tib": "Time in bed is too short. Please verify the entered times."
-    }
+    },
+    "analysis_virtuous_circle_title": "The Virtuous Circle",
+    "analysis_virtuous_circle_desc": "Correlating your rest and activity with your mood level.",
+    "analysis_virtuous_circle_sleep_label": "Sleep Efficiency (%)",
+    "analysis_virtuous_circle_activity_label": "Activities Completed",
+    "analysis_virtuous_circle_mood_label": "Mood Intensity (0-10)",
+    "analysis_virtuous_circle_insight_positive": "Great! On days with high activity, your mood tends to be more stable.",
+    "analysis_virtuous_circle_insight_sleep": "Better sleep efficiency is followed by lower anxiety levels on the next day."
   },
   "emotions": [
     {
@@ -246,7 +262,11 @@
         "terrible",
         "horrible",
         "disaster",
-        "ruined"
+        "ruined",
+        "awful",
+        "bad",
+        "only",
+        "everything is wrong"
       ]
     },
     {
@@ -260,7 +280,13 @@
         "complete success",
         "absolute disaster",
         "useless",
-        "genius"
+        "genius",
+        "always",
+        "never",
+        "all",
+        "none",
+        "everyone",
+        "nobody"
       ]
     }
   ],
@@ -569,6 +595,18 @@
   "help_section4_l4_desc": "Generate human-readable files to view your progress outside the app or share with a professional.",
   "help_section4_l5_title": "FHIR Export:",
   "help_section4_l5_desc": "Generates a file compatible with clinical systems (Fast Healthcare Interoperability Resources), facilitating interoperability if you need to share it with a healthcare professional.",
+  "help_downward_arrow_title": "Downward Arrow Technique",
+  "help_downward_arrow_subtitle": "Identifying Core Beliefs",
+  "help_downward_arrow_p1": "This technique helps you go beyond automatic thoughts to discover the deep beliefs that sustain them.",
+  "help_downward_arrow_p2": "Ask yourself: \"If this thought were true, what would it mean for me?\" or \"What would be the worst thing about that?\". Repeat the process until you reach a definition about yourself, others, or the world.",
+  "help_task_splitter_title": "Task Splitting",
+  "help_task_splitter_subtitle": "Overcoming Procrastination and Overwhelm",
+  "help_task_splitter_p1": "When a goal seems unreachable, we divide it into steps so small that it is impossible not to take them.",
+  "help_task_splitter_p2": "In the Goals section, use splitting to turn a large objective into a series of quick wins that reinforce your self-efficacy.",
+  "help_virtuous_circle_title": "Virtuous Circle Dashboard",
+  "help_virtuous_circle_subtitle": "Visualizing Your Dynamic Progress",
+  "help_virtuous_circle_p1": "The Virtuous Circle is the opposite of the depression cycle. It shows how your actions (behavioral activation) improve your mood and vice versa.",
+  "help_virtuous_circle_p2": "Observe how your wellness and thought intensity charts move as you complete logs and fulfill your goals.",
   "help_section4_warning": "CRITICAL: If you clear your browser data or change devices without exporting, you will lose all your information.",
   "help_section5_title": "💪 Gradual Exposure (ERP)",
   "help_section5_subtitle": "How to face your fears.",
@@ -599,10 +637,21 @@
   "level_label": "Practice Level",
   "level_placeholder": "Select a level",
   "level1_option": "L1 - Self-Observation (Journal)",
-  "level2_option": "L2 - Creative (Displacement)",
-  "level3_option": "L3 - Integration (Restructuring)",
+  "level2_option": "L2 - Perspective (Displacement)",
+  "level3_option": "L3 - Evidence (Restructuring)",
   "reflection_label": "Reflection / Observation",
   "reflection_placeholder": "Answer the prompt or describe the key event...",
+  "friend_technique_title": "Displacement: The Friend Technique",
+  "friend_technique_label": "If a friend told you they were thinking this about themselves, what words would you say to help them?",
+  "friend_technique_placeholder": "Write your compassionate response here...",
+  "friend_technique_tooltip": "This technique helps to take an external perspective, separating the thought from your identity.",
+  "distortions_label": "Identify Thinking Errors",
+  "distortions_placeholder": "Select any distortions you detect...",
+  "restructuring_evidence_title": "Evidence Evaluation",
+  "evidence_for_label": "Facts in favor",
+  "evidence_for_placeholder": "What real facts support this thought? (e.g., 'I made a mistake in the report yesterday')",
+  "evidence_against_label": "Facts against",
+  "evidence_against_placeholder": "What facts contradict this thought? (e.g., 'I have delivered 20 perfect reports before')",
   "creative_expression_title": "Creative Expression (Optional)",
   "creative_link_label": "Creative Link",
   "creative_link_tooltip": "Link a song, video, image, or article that helps you process or represent this emotion.",
@@ -614,7 +663,13 @@
   "auto_thought_placeholder": "What did you automatically think? (e.g., 'I'm useless')",
   "original_intensity_label": "Original Intensity ({{value}})",
   "original_intensity_aria": "Original Intensity of the Automatic Thought",
-  "step2_title": "Step 2: Restructure and Re-evaluate",
+  "step2_title": "Step 2: Uncover Core Belief (Downward Arrow)",
+  "downward_arrow_question": "If this were true, what would it mean to you?",
+  "downward_arrow_placeholder": "Type what this thought implies about you or the world...",
+  "downward_arrow_next": "Next Arrow",
+  "downward_arrow_finish": "Found Core Belief",
+  "downward_arrow_reset": "Reset Chain",
+  "step3_title": "Step 3: Restructuring and Re-evaluation",
   "alt_response_label": "Alternative Response (Restructuring)",
   "alt_response_tooltip": "Here, challenge your original thought. Look for evidence that contradicts it or a more realistic and compassionate perspective.",
   "alt_response_placeholder": "E.g., 'Making a mistake does not make me a failure. It's an opportunity to learn. I have overcome challenges before.'",
@@ -626,6 +681,30 @@
   "emotion_placeholder": "Or describe in your own words...",
   "emotion_intensity_label": "Intensity of the EMOTION ({{value}})",
   "emotion_intensity_aria": "Intensity of the Emotion",
+  "reflejo_anchor_default": "I am here. Breathe with the blue pulse.",
+  "reflejo_anchor_sos": "Your safety comes first. Follow the rhythm and call if you need to.",
+  "reflejo_anchor_rumination": "Your mind is looping. Let's pause for a moment to reconnect.",
+  "reflejo_anchor_high_intensity": "I feel a lot of intensity. Don't try to analyze now, just breathe.",
+  "reflejo_anchor_low_icc": "Restructuring is being difficult today. Let's slow down.",
+  "reflejo_blocked_intensity": "I feel a lot of intensity right now. Your mind is in protection mode. Let's focus only on Level 1 for now. Breathe.",
+  "reflejo_mentor_default": "Your cognitive flexibility is brilliant. You are mastering your thoughts.",
+  "reflejo_observer_default": "I observe your thoughts with curiosity. What are we noticing today?",
+  "reflejo_observer_negative_streak": "We've had some difficult days. I'm still here, observing with you.",
+  "onboarding_quiz": {
+    "title": "Clinical Focus",
+    "subtitle": "Help us tailor Cognit λ to your needs. What brings you here today?",
+    "description": "Select the option that best describes your current state. This helps us prioritize the most effective tools for you.",
+    "option_anxiety": "Anxiety and Panic",
+    "option_anxiety_desc": "I feel constant worry, physical tension, or fear of future events.",
+    "option_depression": "Low mood and Motivation",
+    "option_depression_desc": "I feel a lack of energy, sadness, or loss of interest in activities.",
+    "option_anger": "Irritability and Anger",
+    "option_anger_desc": "I feel easily frustrated or have disproportionate reactions to injustices.",
+    "option_skip": "I'll decide later",
+    "button_finish": "Start my Journey",
+    "profile_applied_title": "Profile Configured",
+    "profile_applied_desc": "We've optimized your dashboard for {{profile}}."
+  },
   "tags_label": "Tags (optional)",
   "tags_placeholder": "Type and press Enter...",
   "add_tag_button": "Add",
@@ -677,8 +756,10 @@
   "activation_activities_desc": "Actions aligned with your values that bring you pleasure or a sense of mastery.",
   "activation_no_activities_for_value": "No activities for this value yet. Add one!",
   "activation_add_value_to_add_activity": "You need to add a value before you can add an activity.",
-  "activation_pleasure_label_short": "Pleasure",
-  "activation_mastery_label_short": "Mastery",
+  "activation_difficulty_label": "Difficulty ({{value}})",
+  "activation_difficulty_label_short": "Diff",
+  "activation_auto_split_button": "Auto-Split (High Difficulty)",
+  "activation_auto_split_toast": "Activity fragmented into micro-steps!",
   "activation_subtasks_button": "Subtasks",
   "activation_add_subtask_placeholder": "Add subtask...",
   "pomodoro_title": "Pomodoro Timer",
@@ -929,5 +1010,78 @@
     "It has been an intense day. What was the exact moment the emotion peaked?",
     "Days like this are tough. What do you need to let go of before sleeping?",
     "High emotional intensity is a learning opportunity. What triggered it?"
-  ]
+  ],
+  "reflejo_anchor_high_intensity_anxiety": "I feel the activation here. Your body is on alert, but you are safe. Put your feet on the ground and breathe slowly.",
+  "reflejo_anchor_high_intensity_depression": "I know the energy feels crushing right now. You don't need to do anything but be here. Breathe.",
+  "reflejo_anchor_high_intensity_anger": "I feel the pressure. Before you act, let the heat come down. Breathe with the blue pulse.",
+  "reflejo_anchor_high_intensity_unspecified": "I feel a lot of intensity. Don't try to analyze now, just breathe.",
+  "reflejo_mentor_anxiety": "I notice the anticipation in your logs. Remember that anxiety is an alarm, not a prophecy.",
+  "reflejo_mentor_depression": "I see the mood has been low. Let's focus today on small victories, however minimal they seem.",
+  "reflejo_mentor_anger": "I've noticed spikes in irritability. Let's use the log to find the 'should' that is triggering the response.",
+  "reflejo_mentor_unspecified": "Your cognitive flexibility is brilliant. You are mastering your thoughts.",
+  "reflejo_observer_anxiety": "It seems uncertainty is weighing heavy today. What part of this situation is under your real control?",
+  "reflejo_observer_depression": "I see a trend toward inactivity. What small thing could you do today that would make you feel useful?",
+  "reflejo_observer_anger": "Frustration appears frequently. Is there any unmet need behind that anger?",
+  "reflejo_observer_unspecified": "I observe your thoughts with curiosity. What are we noticing today?",
+  "reflejo_observer_negative_streak_anxiety": "You've had your guard up for days. Your nervous system needs rest. How about a gentle exposure session?",
+  "reflejo_observer_negative_streak_depression": "It's been hard to get moving these days. Remember: you don't need motivation to act, just one tiny step.",
+  "reflejo_observer_negative_streak_anger": "Accumulated irritation can explode. Have you identified what unmet need has been building this week?",
+  "reflejo_observer_negative_streak_unspecified": "We've had some difficult days. I'm still here, observing with you.",
+  "profile_prompts_anxiety_level_1": [
+    "What physical sensation of anxiety did you notice? Where in your body did you feel it?",
+    "What situation are you anticipating with fear right now? Describe it objectively.",
+    "If that fear came true, what is the worst that could happen?",
+    "What evidence do you have that what you fear will NOT happen?"
+  ],
+  "profile_prompts_depression_level_1": [
+    "What activity have you avoided today because of your mood?",
+    "Was there any small moment today when you felt 1% better?",
+    "If a friend were going through the same thing, what words would you give them?",
+    "What self-critical thought has been present today?"
+  ],
+  "profile_prompts_anger_level_1": [
+    "What 'should' rule do you think was broken for you to feel this way?",
+    "What was the first physical sign that you were getting irritated?",
+    "How important will this situation be in a year?",
+    "What other alternative explanation does the other person's behavior have?"
+  ],
+  "profile_prompts_anxiety_level_2": [
+    "If a friend told you: 'I'm sure it's going to go wrong', what would you say about the evidence?",
+    "What would you say to someone who has exactly your same fear? Be compassionate."
+  ],
+  "profile_prompts_depression_level_2": [
+    "If a friend told you: 'There's no point in trying', what would you respond with care?",
+    "What would you say to someone who believes they are a burden to others?"
+  ],
+  "profile_prompts_anger_level_2": [
+    "If a friend told you this situation from their perspective, would you tell them they're right to be furious?",
+    "What would you say to someone who feels that 'nobody respects them'?"
+  ],
+  "profile_prompts_anxiety_level_3": [
+    "Find 3 concrete facts that contradict your catastrophic prediction.",
+    "How many times have you predicted the worst and it didn't happen? Do the real math."
+  ],
+  "profile_prompts_depression_level_3": [
+    "What real evidence do you have that it 'always' goes wrong? Look for concrete exceptions.",
+    "List 3 achievements from this week, no matter how small."
+  ],
+  "profile_prompts_anger_level_3": [
+    "What facts support that the other person acted intentionally against you? And what facts contradict that?",
+    "Is your 'should' rule universal, or is it your personal expectation?"
+  ],
+  "settings_tab_clinical": "Clinical",
+  "settings_clinical_profile_label": "Main Therapeutic Focus",
+  "settings_clinical_profile_desc": "Reflejo and journal prompts will adapt to this profile.",
+  "settings_profile_anxiety": "Anxiety and Panic",
+  "settings_profile_depression": "Depression and Low Mood",
+  "settings_profile_anger": "Irritability and Anger",
+  "settings_profile_unspecified": "General Wellbeing (Unspecified)",
+  "settings_clinical_disclaimer": "Note: Changing the profile does not delete your previous data; it only adjusts Reflejo's voice and suggested themes.",
+  "reflejo_contextual_low_icc": "The restructuring hasn't reduced the belief's credibility much. Is there any evidence we might be overlooking?",
+  "reflejo_contextual_first_of_day": "First reflection of the day. Good to see you here; consistency is your best ally.",
+  "reflejo_contextual_recurring_distortion": "I've noticed this thought pattern repeating lately. Had you identified it yet?",
+  "clinical_disclaimer_title": "Important Notice",
+  "clinical_disclaimer_body": "Cognit is a CBT-based support tool, not a substitute for professional therapy. If your distress is persistent or severe, please seek help from a mental health professional.",
+  "clinical_disclaimer_button_onboarding": "Continue with this in mind",
+  "clinical_disclaimer_sos_addition": "If this happens frequently, consider speaking with a professional."
 }

@@ -12,6 +12,9 @@ import { NegativeStreakAlert } from './NegativeStreakAlert';
 import { useTranslation } from '@/hooks/use-translation';
 import { useCbtJournal } from '@/hooks/use-cbt-journal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import ReflejoAvatar from './ReflejoAvatar';
+import { getReflejoContextualState } from '@/lib/reflejo';
 
 
 interface ThoughtListProps {
@@ -24,13 +27,15 @@ interface ThoughtListProps {
   negativeStreak: number;
 }
 
-const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void; onMoveToL3: (data: Partial<ThoughtEntryFormData>) => void; }> = ({ entry, onDelete, onMoveToL3 }) => {
+const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void; onMoveToL3: (data: Partial<ThoughtEntryFormData>) => void; allEntries: ThoughtEntry[]; }> = ({ entry, onDelete, onMoveToL3, allEntries }) => {
     const { t, locale } = useTranslation();
-    const { goals } = useCbtJournal();
+    const { goals, clinicalProfile } = useCbtJournal();
     const levelEmoji = entry.level === 1 ? '💙' : entry.level === 2 ? '💜' : '💛';
     const iccScore = calculateICC(entry.originalIntensity, entry.finalCredibility);
     
     const linkedGoal = entry.linkedGoalId ? goals.find(g => g.id === entry.linkedGoalId) : null;
+
+    const reflejoState = getReflejoContextualState(entry, allEntries, t, clinicalProfile);
 
     const handleMoveToL3 = () => {
         onMoveToL3({
@@ -53,6 +58,23 @@ const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void;
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant={entry.__draft ? 'destructive' : 'secondary'}>{levelEmoji} L{entry.level}{entry.__draft ? ` (${t('draft_label')})` : ''}</Badge>
+                    {reflejoState && (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className="outline-none focus:ring-2 focus:ring-primary rounded-full transition-transform hover:scale-110 active:scale-95">
+                                    <ReflejoAvatar mode={reflejoState.mode} size={32} showHalo={true} />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent side="top" align="end" className="w-64 p-3 bg-card border-primary/20 shadow-xl">
+                                <div className="flex gap-3">
+                                    <ReflejoAvatar mode={reflejoState.mode} size={24} showHalo={false} className="mt-1" />
+                                    <p className="text-sm font-medium leading-tight">
+                                        {reflejoState.message}
+                                    </p>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    )}
                      <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={t('delete_entry_aria_label')}>
@@ -143,7 +165,7 @@ const ThoughtList: React.FC<ThoughtListProps> = ({ entries, onDelete, onLoadMore
         ) : (
           <div className="space-y-4 mt-4">
             {entries.map(entry => (
-              <EntryCard key={entry.id} entry={entry} onDelete={onDelete} onMoveToL3={onMoveToL3} />
+              <EntryCard key={entry.id} entry={entry} onDelete={onDelete} onMoveToL3={onMoveToL3} allEntries={entries} />
             ))}
           </div>
         )}

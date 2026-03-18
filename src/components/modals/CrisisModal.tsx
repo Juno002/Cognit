@@ -16,6 +16,7 @@ import { escapeHtml } from '@/lib/utils';
 import { Button } from '../ui/button';
 import BreathingGuide from '../BreathingGuide';
 import { useTranslation } from '@/hooks/use-translation';
+import ReflejoAvatar from '@/components/ReflejoAvatar';
 
 const CrisisModal: React.FC<{
     isOpen: boolean;
@@ -49,9 +50,11 @@ const CrisisModal: React.FC<{
     return (
         <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="text-destructive text-2xl">🚨 {t('crisis_modal_title')}</AlertDialogTitle>
-                     <AlertDialogDescription className="text-base pt-2">
+                <AlertDialogHeader className="flex flex-col items-center">
+                    <ReflejoAvatar mode="anchor" size={70} className="mb-4" />
+                    <AlertDialogTitle className="text-destructive text-2xl text-center">🚨 {t('crisis_modal_title')}</AlertDialogTitle>
+                     <AlertDialogDescription className="text-base text-center pt-2">
+                       <p className="font-bold italic text-reflejo-anchor mb-4">"{t('reflejo_anchor_sos')}"</p>
                        {showBreathing 
                          ? t('crisis_modal_breathing_desc')
                          : t('crisis_modal_desc')
@@ -94,6 +97,12 @@ const CrisisModal: React.FC<{
                                     </div>
                                 ))}
                             </div>
+                        </div>
+
+                        <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 mt-4">
+                            <p className="text-xs text-muted-foreground text-center">
+                                {t('clinical_disclaimer_sos_addition')}
+                            </p>
                         </div>
                     </div>
                 )}

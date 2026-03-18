@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useImperativeHandle, Ref } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,11 +13,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { BookPlus, X, Volume2, Mic, Link as LinkIcon, HelpCircle, Target, Zap } from 'lucide-react';
-import type { ThoughtEntryData, ThoughtEntryFormData } from '@/types';
+import { BookPlus, X, Volume2, Mic, Link as LinkIcon, HelpCircle, Target, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
+import type { ThoughtEntryData, ThoughtEntryFormData, CognitiveDistortion, ClinicalProfile } from '@/types';
 import { todayISO } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { detectCognitiveDistortions } from '@/lib/distortions';
 import { useCbtJournal } from '@/hooks/use-cbt-journal';
 import type { JournalStats } from '@/hooks/use-cbt-journal';
 import { getContextualPrompt } from '@/lib/prompts';
@@ -41,6 +43,9 @@ const formSchema = z.object({
   intensity: z.number().min(1).max(10),
   tags: z.array(z.string()),
   linkedGoalId: z.string().optional(),
+  friendResponse: z.string().optional(),
+  evidenceFor: z.string().optional(),
+  evidenceAgainst: z.string().optional(),
 }).refine(data => {
     if (data.level === 3) {
       if (!data.originalIntensity || !data.finalCredibility) return true;
@@ -80,15 +85,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+
 interface ThoughtFormProps {
   onSubmit: (data: ThoughtEntryData) => void;
   stats: JournalStats;
   formRef: Ref<UseFormReturn<FormValues>>;
   onOpenChange: (open: boolean) => void;
   onNavigateToAction: () => void;
+  clinicalProfile?: ClinicalProfile;
 }
 
-type TextareaFieldNames = "note" | "situation" | "automaticThought" | "alternativeResponse";
+type TextareaFieldNames = "note" | "situation" | "automaticThought" | "alternativeResponse" | "friendResponse" | "evidenceFor" | "evidenceAgainst";
 
 
 const SpeechButton: React.FC<{ field: TextareaFieldNames, form: UseFormReturn<FormValues> }> = ({ field, form }) => {
@@ -116,13 +123,17 @@ const SpeechButton: React.FC<{ field: TextareaFieldNames, form: UseFormReturn<Fo
 };
 
 
-const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onOpenChange, onNavigateToAction }) => {
+const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onOpenChange, onNavigateToAction, clinicalProfile }) => {
   const { isSaving, goals } = useCbtJournal();
   const { t } = useTranslation();
   const [level, setLevel] = useState(1);
   const [prompt, setPrompt] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [arrowChain, setArrowChain] = useState<string[]>([]);
+  const [arrowInput, setArrowInput] = useState('');
+  const [isArrowComplete, setIsArrowComplete] = useState(false);
+  const [detectedDistortions, setDetectedDistortions] = useState<CognitiveDistortion[]>([]);
   
   const EMOTIONS: {emoji: string, label: string}[] = useMemo(() => t('emotions'), [t]);
 
@@ -143,6 +154,9 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
       intensity: 5,
       tags: [],
       linkedGoalId: '',
+      friendResponse: '',
+      evidenceFor: '',
+      evidenceAgainst: '',
     },
   });
 
@@ -175,7 +189,7 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
 
 
   useEffect(() => {
-    const newPrompt = getContextualPrompt(watchedLevel, stats, t);
+    const newPrompt = getContextualPrompt(watchedLevel, stats, t, clinicalProfile);
     setPrompt(newPrompt);
   }, [watchedLevel, stats, t]);
   
@@ -233,9 +247,44 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
   };
   
   const handleNavigateClick = () => {
-    onOpenChange(false); // Close the form dialog
     onNavigateToAction(); // Trigger navigation
   };
+
+  const addToArrowChain = () => {
+    if (!arrowInput.trim()) return;
+    const newChain = [...arrowChain, arrowInput.trim()];
+    setArrowChain(newChain);
+    setArrowInput('');
+    // Update the form's automatic thought to the current "deepest" level
+    form.setValue('automaticThought', arrowInput.trim(), { shouldValidate: true });
+  };
+
+  const finishArrowChain = () => {
+    if (arrowInput.trim()) {
+        const newChain = [...arrowChain, arrowInput.trim()];
+        setArrowChain(newChain);
+        form.setValue('automaticThought', arrowInput.trim(), { shouldValidate: true });
+    }
+    setIsArrowComplete(true);
+    setArrowInput('');
+  };
+
+  const resetArrowChain = () => {
+      setArrowChain([]);
+      setArrowInput('');
+      setIsArrowComplete(false);
+  };
+
+  const watchAutoThought = form.watch('automaticThought');
+
+  useEffect(() => {
+    if (watchAutoThought) {
+        const detected = detectCognitiveDistortions(watchAutoThought, t, clinicalProfile);
+        setDetectedDistortions(detected);
+    } else {
+        setDetectedDistortions([]);
+    }
+  }, [watchAutoThought, t]);
 
   return (
     <DialogContent className="max-h-screen overflow-y-scroll">
@@ -284,8 +333,8 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="1">💙 {t('level1_option')}</SelectItem>
-                                <SelectItem value="2">💜 {t('level2_option')}</SelectItem>
-                                <SelectItem value="3">💛 {t('level3_option')}</SelectItem>
+                                <SelectItem value="2" disabled={watchedIntensity >= 8}>💜 {t('level2_option')}</SelectItem>
+                                <SelectItem value="3" disabled={watchedIntensity >= 8}>💛 {t('level3_option')}</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -313,7 +362,27 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
               )}
             />
 
-            {showActivationSuggestion && (
+            {watchedIntensity >= 8 && watchedLevel > 1 && (
+                <div className="border-l-4 border-primary bg-primary/10 p-4 rounded-r-md text-sm flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                        <span className="text-sm font-bold text-primary">λ</span>
+                    </div>
+                    <div>
+                        <p className="font-semibold text-primary">Intervención de Reflejo</p>
+                        <p className="italic text-muted-foreground">"{t('reflejo_blocked_intensity')}"</p>
+                        <Button 
+                            type="button" 
+                            variant="link" 
+                            className="p-0 h-auto mt-2 text-xs"
+                            onClick={() => form.setValue('level', 1)}
+                        >
+                            Cambiar a Nivel 1 (Auto-observación)
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {showActivationSuggestion && watchedIntensity < 8 && (
                 <div className="border-l-4 border-yellow-500 bg-yellow-500/10 p-3 rounded-r-md text-sm">
                     <p className="font-semibold">{t('proactive_activation_title')}</p>
                     <p className="mb-2">{t('proactive_activation_desc')}</p>
@@ -328,38 +397,78 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
                 <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
                   <AccordionItem value="item-1">
                       <AccordionTrigger>
-                          {t('creative_expression_title')}
+                          ✨ {t('friend_technique_title')}
                       </AccordionTrigger>
                       <AccordionContent>
                          <div className="space-y-4 pt-4">
                           <FormField
-                              control={form.control}
-                              name="creativeLink"
-                              render={({ field }) => (
-                                  <FormItem>
-                                      <div className="flex items-center gap-2">
-                                          <FormLabel>🔗 {t('creative_link_label')}</FormLabel>
-                                          <TooltipProvider>
-                                              <Tooltip>
-                                                  <TooltipTrigger asChild>
-                                                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                                                  </TooltipTrigger>
-                                                  <TooltipContent>
-                                                      <p className="max-w-xs">{t('creative_link_tooltip')}</p>
-                                                  </TooltipContent>
-                                              </Tooltip>
-                                          </TooltipProvider>
-                                      </div>
-                                  <FormControl>
-                                      <div className="relative flex items-center">
-                                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                          <Input className="pl-10" placeholder="https://..." {...field} />
-                                      </div>
-                                  </FormControl>
-                                  <FormMessage />
-                                  </FormItem>
-                              )}
-                          />
+                                control={form.control}
+                                name="friendResponse"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <div className="flex items-center gap-2">
+                                            <FormLabel>{t('friend_technique_label')}</FormLabel>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p className="max-w-xs">{t('friend_technique_tooltip')}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Textarea placeholder={t('friend_technique_placeholder')} {...field} className={cn("pr-10", fieldStyles(field.value))}/>
+                                            <div className="absolute bottom-1 right-1">
+                                                <SpeechButton field="friendResponse" form={form} />
+                                            </div>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                           <div className="pt-2">
+                                <FormLabel className="flex items-center gap-2 mb-2">
+                                    🧐 {t('distortions_label')}
+                                </FormLabel>
+                                {detectedDistortions.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {detectedDistortions.map(d => (
+                                            <Badge key={d.id} variant="secondary" className="px-3 py-1 bg-yellow-500/10 border-yellow-500/40 text-yellow-700">
+                                                {d.name}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic mb-2">
+                                        Escribe en tu reflexión para detectar distorsiones automáticamente.
+                                    </p>
+                                )}
+                           </div>
+
+                          <FormField
+                               control={form.control}
+                               name="creativeLink"
+                               render={({ field }) => (
+                                   <FormItem>
+                                       <div className="flex items-center gap-2">
+                                           <FormLabel>🔗 {t('creative_link_label')} ({t('optional')})</FormLabel>
+                                       </div>
+                                   <FormControl>
+                                       <div className="relative flex items-center">
+                                           <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                           <Input className="pl-10" placeholder="https://..." {...field} />
+                                       </div>
+                                   </FormControl>
+                                   <FormMessage />
+                                   </FormItem>
+                               )}
+                           />
                          </div>
                       </AccordionContent>
                   </AccordionItem>
@@ -410,6 +519,15 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
                                       </div>
                                   </FormControl>
                                   <FormMessage />
+                                  {detectedDistortions.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                          {detectedDistortions.map(d => (
+                                              <Badge key={d.id} variant="outline" className="text-[10px] bg-yellow-500/10 border-yellow-500/40 text-yellow-600 font-medium">
+                                                  🧐 {d.name}
+                                              </Badge>
+                                          ))}
+                                      </div>
+                                  )}
                                   </FormItem>
                               )}
                           />
@@ -432,8 +550,125 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
                           />
                        </div>
 
-                       <div className="space-y-4 rounded-md border border-dashed p-4">
-                          <h4 className="text-sm font-semibold">{t('step2_title')}</h4>
+                        <div className="space-y-4 rounded-md border border-dashed p-4 bg-primary/5">
+                           <h4 className="text-sm font-semibold flex items-center gap-2">
+                             <ArrowRight className="h-4 w-4 text-primary" />
+                             {t('step2_title')}
+                           </h4>
+                           
+                           <div className="space-y-3">
+                               {arrowChain.length > 0 && arrowChain.map((thought, idx) => (
+                                   <motion.div 
+                                     key={idx}
+                                     initial={{ opacity: 0, x: -10 }}
+                                     animate={{ opacity: 1, x: 0 }}
+                                     className="flex gap-2 items-start"
+                                   >
+                                       <div className="flex flex-col items-center">
+                                           <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                                           <div className="w-[1px] h-full bg-primary/20" />
+                                       </div>
+                                       <div className="flex-1 text-sm bg-card p-2 rounded border italic">
+                                           "{thought}"
+                                       </div>
+                                   </motion.div>
+                               ))}
+
+                               {!isArrowComplete ? (
+                                   <div className="space-y-4 pt-2">
+                                       <p className="text-sm font-medium text-primary italic">
+                                           {t('downward_arrow_question')}
+                                       </p>
+                                       <div className="relative">
+                                           <Textarea 
+                                               value={arrowInput}
+                                               onChange={(e) => setArrowInput(e.target.value)}
+                                               placeholder={t('downward_arrow_placeholder')}
+                                               className="min-h-[80px] bg-background"
+                                           />
+                                       </div>
+                                       <div className="flex gap-2">
+                                           <Button 
+                                               type="button" 
+                                               variant="outline" 
+                                               size="sm" 
+                                               className="flex-1"
+                                               onClick={addToArrowChain}
+                                               disabled={!arrowInput.trim()}
+                                           >
+                                               {t('downward_arrow_next')}
+                                           </Button>
+                                           <Button 
+                                               type="button" 
+                                               size="sm" 
+                                               className="flex-1"
+                                               onClick={finishArrowChain}
+                                               disabled={!arrowInput.trim() && arrowChain.length === 0}
+                                           >
+                                               {t('downward_arrow_finish')}
+                                           </Button>
+                                       </div>
+                                   </div>
+                               ) : (
+                                   <div className="pt-2 flex items-center justify-between">
+                                       <p className="text-sm font-bold text-success flex items-center gap-1">
+                                           <CheckCircle2 className="h-4 w-4" />
+                                           Creencia Central Identificada
+                                       </p>
+                                       <Button variant="ghost" size="sm" onClick={resetArrowChain} className="text-xs">
+                                           {t('downward_arrow_reset')}
+                                       </Button>
+                                   </div>
+                               )}
+                           </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-md border border-dashed p-4 bg-primary/5">
+                           <h4 className="text-sm font-semibold flex items-center gap-2">
+                             🔍 {t('restructuring_evidence_title')}
+                           </h4>
+                           <FormField
+                               control={form.control}
+                               name="evidenceFor"
+                               render={({ field }) => (
+                                   <FormItem>
+                                   <FormLabel>{t('evidence_for_label')}</FormLabel>
+                                   <FormControl>
+                                       <div className="relative">
+                                           <Textarea className={cn("min-h-[60px] pr-10", fieldStyles(field.value))} placeholder={t('evidence_for_placeholder')} {...field} />
+                                           <div className="absolute bottom-1 right-1">
+                                               <SpeechButton field="evidenceFor" form={form} />
+                                           </div>
+                                       </div>
+                                   </FormControl>
+                                   <FormMessage />
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="evidenceAgainst"
+                               render={({ field }) => (
+                                   <FormItem>
+                                   <FormLabel>{t('evidence_against_label')}</FormLabel>
+                                   <FormControl>
+                                       <div className="relative">
+                                           <Textarea className={cn("min-h-[60px] pr-10", fieldStyles(field.value))} placeholder={t('evidence_against_placeholder')} {...field} />
+                                           <div className="absolute bottom-1 right-1">
+                                               <SpeechButton field="evidenceAgainst" form={form} />
+                                           </div>
+                                       </div>
+                                   </FormControl>
+                                   <FormMessage />
+                                   </FormItem>
+                               )}
+                           />
+                        </div>
+
+                        <div className="space-y-4 rounded-md border border-dashed p-4">
+                           <h4 className="text-sm font-semibold flex items-center gap-2">
+                             ⚖️ {t('step3_title')}
+                           </h4>
                            <FormField
                               control={form.control}
                               name="alternativeResponse"

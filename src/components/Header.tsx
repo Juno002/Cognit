@@ -105,85 +105,18 @@ const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, 
                     crisisConfig={crisisConfig}
                     updateCrisisConfig={updateCrisisConfig}
                     lastPrompt={lastPrompt}
+                    onImport={onImport}
+                    onExportJson={onExportJson}
+                    onExportCsv={onExportCsv}
+                    onExportReport={onExportReport}
+                    onExportL3Report={onExportL3Report}
+                    onAutoZip={onAutoZip}
+                    onExportFhir={onExportFhir}
+                    onPrintReport={onPrintReport}
+                    isZipping={isZipping}
+                    onReset={onReset}
                 />
             </Dialog>
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-9 px-2">
-                        <MoreVertical className="h-5 w-5" />
-                        <span className="sr-only">More options</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                        <DropdownMenuLabel>{t('header_export_data')}</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={onAutoZip} disabled={isZipping} data-tour="autozip-button">
-                            <Zap className="mr-2 h-4 w-4" />
-                            <span>{isZipping ? t('header_zipping') : t('header_autozip')}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onExportL3Report}>
-                            <span className="mr-2 h-4 w-4">✨</span>
-                            <span>{t('l3_report_title')}</span>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem onClick={onPrintReport}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            <span>{t('header_export_pdf')}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onExportReport}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>{t('header_export_report')}</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuGroup>
-                        <DropdownMenuLabel>Gestión de Datos</DropdownMenuLabel>
-                         <DropdownMenuItem onClick={() => importInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            <span>{t('header_import')}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onExportJson}>
-                            <FileJson className="mr-2 h-4 w-4" />
-                            <span>{t('header_export_json')}</span>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem onClick={onExportCsv}>
-                            <FileSpreadsheet className="mr-2 h-4 w-4" />
-                            <span>{t('header_export_csv')}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={onExportFhir}>
-                            <HeartPulse className="mr-2 h-4 w-4" />
-                            <span>{t('header_export_fhir')}</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={toggleTheme}>
-                             {theme === 'dark' ? <Sun className="mr-2 h-4 w-4"/> : <Moon className="mr-2 h-4 w-4"/>}
-                             <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
-                        </DropdownMenuItem>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>{t('header_reset')}...</span>
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>{t('reset_dialog_title')}</AlertDialogTitle>
-                                <AlertDialogDescription>{t('reset_dialog_desc')}</AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={onReset} className="bg-destructive hover:bg-destructive/90">
-                                    {t('reset_dialog_confirm')}
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
 
             <input
                 type="file"

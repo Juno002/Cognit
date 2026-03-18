@@ -13,6 +13,9 @@ export interface ThoughtEntry {
   automaticThought: string;
   alternativeResponse: string;
   creativeLink?: string; // Field for L2
+  friendResponse?: string; // Displacement: The Friend Technique
+  evidenceFor?: string; // Restructuring: Evidence for
+  evidenceAgainst?: string; // Restructuring: Evidence against
   originalIntensity?: number | null; // 1-10 for the automatic thought
   finalCredibility?: number | null; // 1-10 for the automatic thought after challenge
   __draft?: boolean; // To mark incomplete L3 entries
@@ -95,6 +98,7 @@ export interface Subtask {
     id: string;
     name: string;
     completed: boolean;
+    completedAt?: string; // YYYY-MM-DD
 }
 
 export interface ActivationActivity {
@@ -103,6 +107,7 @@ export interface ActivationActivity {
     valueId: string;
     pleasure: number; // 0-10
     mastery: number; // 0-10
+    difficulty: number; // 1-10
     subtasks?: Subtask[];
 }
 
@@ -187,3 +192,5 @@ export interface TourState {
     exposure: TourStepState | boolean;
     wellness: TourStepState | boolean;
 }
+
+export type ClinicalProfile = 'anxiety' | 'depression' | 'anger' | 'unspecified';
