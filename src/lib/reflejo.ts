@@ -34,7 +34,7 @@ export function getReflejoState(
         return {
             mode: 'anchor',
             message,
-            color: 'hsl(var(--reflejo-anchor))',
+            color: 'hsl(var(--lambda-anchor))',
             animation: 'pulse-slow'
         };
     }
@@ -46,7 +46,7 @@ export function getReflejoState(
         return {
             mode: 'mentor',
             message,
-            color: 'hsl(var(--reflejo-mentor))',
+            color: 'hsl(var(--lambda-mentor))',
             animation: 'float'
         };
     }
@@ -61,7 +61,7 @@ export function getReflejoState(
     return {
         mode: 'observer',
         message,
-        color: 'hsl(var(--reflejo-observer))',
+        color: 'hsl(var(--lambda-observer))',
         animation: 'neutral'
     };
 }
@@ -87,7 +87,7 @@ export function getReflejoContextualState(
         return {
             mode: 'anchor',
             message: t('lambda_contextual_low_icc'),
-            color: 'hsl(var(--reflejo-anchor))',
+            color: 'hsl(var(--lambda-anchor))',
             animation: 'pulse-slow'
         };
     }
@@ -97,7 +97,7 @@ export function getReflejoContextualState(
         return {
             mode: 'anchor',
             message: t(`lambda_anchor_high_intensity_${profile}`) || t('lambda_anchor_high_intensity'),
-            color: 'hsl(var(--reflejo-anchor))',
+            color: 'hsl(var(--lambda-anchor))',
             animation: 'pulse-slow'
         };
     }
@@ -109,7 +109,7 @@ export function getReflejoContextualState(
         return {
             mode: 'mentor',
             message: t('lambda_contextual_first_of_day'),
-            color: 'hsl(var(--reflejo-mentor))',
+            color: 'hsl(var(--lambda-mentor))',
             animation: 'float'
         };
     }
@@ -126,7 +126,7 @@ export function getReflejoContextualState(
                 return {
                     mode: 'observer',
                     message: t('lambda_contextual_recurring_distortion'),
-                    color: 'hsl(var(--reflejo-observer))',
+                    color: 'hsl(var(--lambda-observer))',
                     animation: 'neutral'
                 };
             }

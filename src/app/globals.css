@@ -41,9 +41,9 @@
     --warning: 38 92% 50%;
     --icc-metric: 262 84% 60%;
 
-    --reflejo-mentor: 158 70% 45%;
-    --reflejo-observer: 262 70% 60%;
-    --reflejo-anchor: 221 83% 40%;
+    --lambda-mentor: 158 70% 45%;
+    --lambda-observer: 262 70% 60%;
+    --lambda-anchor: 221 83% 40%;
 
     /* Slider Colors */
     --slider-track: hsl(var(--secondary));
@@ -90,9 +90,9 @@
     --warning: 48 96% 53%;
     --icc-metric: 262 99% 77%;
 
-    --reflejo-mentor: 158 60% 50%;
-    --reflejo-observer: 262 60% 65%;
-    --reflejo-anchor: 221 70% 45%;
+    --lambda-mentor: 158 60% 50%;
+    --lambda-observer: 262 60% 65%;
+    --lambda-anchor: 221 70% 45%;
   }
 
   .theme-zen {

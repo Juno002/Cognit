@@ -368,8 +368,8 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
                         <span className="text-sm font-bold text-primary">λ</span>
                     </div>
                     <div>
-                        <p className="font-semibold text-primary">Intervención de Reflejo</p>
-                        <p className="italic text-muted-foreground">"{t('reflejo_blocked_intensity')}"</p>
+                        <p className="font-semibold text-primary">Intervención de Lambda</p>
+                        <p className="italic text-muted-foreground">"{t('lambda_blocked_intensity')}"</p>
                         <Button 
                             type="button" 
                             variant="link" 

@@ -54,15 +54,15 @@ const RuminationModal: React.FC<RuminationModalProps> = ({ isOpen, onClose }) =>
             <AlertDialogContent>
                 <AlertDialogHeader className="flex flex-col items-center">
                     <ReflejoAvatar mode="anchor" size={80} className="mb-4" />
-                    <AlertDialogTitle className="text-reflejo-anchor text-2xl text-center">{t('rumination_modal_title')}</AlertDialogTitle>
+                    <AlertDialogTitle className="text-lambda-anchor text-2xl text-center">{t('rumination_modal_title')}</AlertDialogTitle>
                     <AlertDialogDescription className="text-base text-center space-y-2">
-                        <p className="font-bold italic text-reflejo-anchor">"{t('reflejo_anchor_rumination')}"</p>
+                        <p className="font-bold italic text-lambda-anchor">"{t('lambda_anchor_rumination')}"</p>
                         <p>{t('rumination_modal_desc1')}</p>
                         <p>{t('rumination_modal_desc2')}</p>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 
-                <div className="flex items-center justify-center text-6xl font-bold text-reflejo-anchor my-6">
+                <div className="flex items-center justify-center text-6xl font-bold text-lambda-anchor my-6">
                     {countdown > 0 ? countdown : t('rumination_modal_end')}
                 </div>
 

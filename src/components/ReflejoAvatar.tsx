@@ -18,21 +18,21 @@ const ReflejoAvatar: React.FC<ReflejoAvatarProps> = ({ mode, size = 40, classNam
     // Configuración visual según el modo
     const config = {
         mentor: {
-            color: 'var(--reflejo-mentor)',
+            color: 'var(--lambda-mentor)',
             borderRadius: ["40% 60% 70% 30% / 40% 50% 60% 50%", "60% 40% 30% 70% / 50% 60% 40% 60%", "40% 60% 70% 30% / 40% 50% 60% 50%"],
             scale: [1, 1.05, 1],
             rotate: [0, 5, -5, 0],
             duration: 4
         },
         observer: {
-            color: 'var(--reflejo-observer)',
+            color: 'var(--lambda-observer)',
             borderRadius: ["30% 70% 70% 30% / 30% 30% 70% 70%", "70% 30% 30% 70% / 70% 70% 30% 30%", "30% 70% 70% 30% / 30% 30% 70% 70%"],
             scale: [1, 1.02, 1],
             rotate: 0,
             duration: 6
         },
         anchor: {
-            color: 'var(--reflejo-anchor)',
+            color: 'var(--lambda-anchor)',
             borderRadius: "15%", // Casi un cuadrado para estabilidad
             scale: [1, 0.95, 1], // Pulso de contracción (respiración)
             rotate: 0,
