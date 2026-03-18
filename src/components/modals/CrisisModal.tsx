@@ -50,11 +50,12 @@ const CrisisModal: React.FC<{
     return (
         <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
+                {/* Guía de Respiración Lambda */}
                 <AlertDialogHeader className="flex flex-col items-center">
                     <ReflejoAvatar mode="anchor" size={70} className="mb-4" />
                     <AlertDialogTitle className="text-destructive text-2xl text-center">🚨 {t('crisis_modal_title')}</AlertDialogTitle>
                      <AlertDialogDescription className="text-base text-center pt-2">
-                       <p className="font-bold italic text-reflejo-anchor mb-4">"{t('reflejo_anchor_sos')}"</p>
+                       <p className="font-bold italic text-lambda-anchor mb-4">"{t('lambda_anchor_sos')}"</p>
                        {showBreathing 
                          ? t('crisis_modal_breathing_desc')
                          : t('crisis_modal_desc')

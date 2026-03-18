@@ -71,7 +71,7 @@ Cognit λ is an **interactive cognitive coach** that teaches you to identify and
 | **Distortion Detector** | Identifies patterns like Catastrophizing, Mental Filter, Mind Reading in your automatic thoughts |
 | **ICC Measurement** | Quantifies how effectively you reduce belief in distorted thoughts (0.0 - 1.0 scale) |
 | **Crisis Plan** | Personal safety contacts + coping phrases, activated when high-risk language is detected |
-| **Reflejo λ** | Tu "Eco Cognitivo": un avatar que reacciona a tu estado emocional y guía las intervenciones clínicas. |
+| **Lambda λ** | Tu \"Eco Cognitivo\": un avatar que reacciona a tu estado emocional y guía las intervenciones clínicas. |
 | **Auto-Lock** | Automatically locks the journal after a period of inactivity to protect from prying eyes. |
 | **Offline Support** | Full PWA with Service Workers—works without internet |
 
@@ -359,8 +359,8 @@ Hemos completado con éxito todas las fases de nuestro roadmap terapéutico, tra
 *   **Onboarding Interactivo y Recordatorios de Backup**: Se ha implementado un tour guiado para nuevos usuarios y un recordatorio inteligente para copias de seguridad.
 *   **Temas Personalizables**: El usuario puede ahora elegir entre varios temas de color para personalizar su experiencia.
 
-### ✅ **FASE FINAL: Reflejo y Enfoque Clínico (¡Completado!)**
-*   **Avatar "Reflejo"**: Integración de un guía visual interactivo que adopta roles (Mentor/Ancla/Observador) según la intensidad del malestar.
+### ✅ **FASE FINAL: Lambda y Enfoque Clínico (¡Completado!)**
+*   **Avatar \"Lambda\"**: Integración de un guía visual interactivo que adopta roles (Mentor/Ancla/Observador) según la intensidad del malestar.
 *   **Onboarding con Enfoque Clínico**: El usuario ahora elige su enfoque (Ansiedad, Depresión, etc.) y recibe avisos preventivos claros.
 *   **Deslindes de Responsabilidad**: Integrados en onboarding, panel de ayuda y protocolo SOS.
 

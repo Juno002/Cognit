@@ -52,6 +52,29 @@ const HelpModal = () => {
                 </HelpSection>
             </AccordionContent>
           </AccordionItem>
+          
+          <AccordionItem value="item-lambda">
+            <AccordionTrigger className="text-lg font-semibold">{t('help_lambda_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('help_lambda_subtitle')}>
+                    <p>{t('help_lambda_desc')}</p>
+                    <ul>
+                        <li><strong>{t('help_lambda_l1_title')}</strong> {t('help_lambda_l1_desc')}</li>
+                        <li><strong>{t('help_lambda_l2_title')}</strong> {t('help_lambda_l2_desc')}</li>
+                        <li><strong>{t('help_lambda_l3_title')}</strong> {t('help_lambda_l3_desc')}</li>
+                    </ul>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-clinical">
+            <AccordionTrigger className="text-lg font-semibold">{t('help_clinical_focus_title')}</AccordionTrigger>
+            <AccordionContent>
+                 <HelpSection title={t('help_clinical_focus_subtitle')}>
+                    <p>{t('help_clinical_focus_desc')}</p>
+                </HelpSection>
+            </AccordionContent>
+          </AccordionItem>
 
           <AccordionItem value="item-2">
             <AccordionTrigger className="text-lg font-semibold">{t('help_section2_title')}</AccordionTrigger>

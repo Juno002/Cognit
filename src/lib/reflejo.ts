@@ -22,14 +22,14 @@ export function getReflejoState(
 
     // 1. ANCHOR MODE (Highest priority: Crisis, High Intensity, SOS, Low ICC)
     if (context?.isSOS || context?.isRumination || (context?.intensity && context.intensity >= 8) || (stats.avgICC && parseFloat(stats.avgICC) < 0.35)) {
-        let messageKey = 'reflejo_anchor_default';
-        if (context?.isSOS) messageKey = 'reflejo_anchor_sos';
-        else if (context?.isRumination) messageKey = 'reflejo_anchor_rumination';
-        else if (context?.intensity && context.intensity >= 8) messageKey = `reflejo_anchor_high_intensity_${profile}`;
-        else messageKey = 'reflejo_anchor_low_icc';
+        let messageKey = 'lambda_anchor_default';
+        if (context?.isSOS) messageKey = 'lambda_anchor_sos';
+        else if (context?.isRumination) messageKey = 'lambda_anchor_rumination';
+        else if (context?.intensity && context.intensity >= 8) messageKey = `lambda_anchor_high_intensity_${profile}`;
+        else messageKey = 'lambda_anchor_low_icc';
 
         // Fallback to generic if profile-specific key doesn't exist
-        const message = t(messageKey) || t('reflejo_anchor_high_intensity');
+        const message = t(messageKey) || t('lambda_anchor_high_intensity');
 
         return {
             mode: 'anchor',
@@ -41,8 +41,8 @@ export function getReflejoState(
 
     // 2. MENTOR MODE (Success: High ICC)
     if (stats.avgICC && parseFloat(stats.avgICC) > 0.65) {
-        const profileKey = `reflejo_mentor_${profile}`;
-        const message = t(profileKey) || t('reflejo_mentor_default');
+        const profileKey = `lambda_mentor_${profile}`;
+        const message = t(profileKey) || t('lambda_mentor_default');
         return {
             mode: 'mentor',
             message,
@@ -52,11 +52,11 @@ export function getReflejoState(
     }
 
     // 3. OBSERVER MODE (Default, Negative Streak)
-    let messageKey = `reflejo_observer_${profile}`;
+    let messageKey = `lambda_observer_${profile}`;
     if (analysis.negativeStreak > 3) {
-        messageKey = `reflejo_observer_negative_streak_${profile}`;
+        messageKey = `lambda_observer_negative_streak_${profile}`;
     }
-    const message = t(messageKey) || t(analysis.negativeStreak > 3 ? 'reflejo_observer_negative_streak' : 'reflejo_observer_default');
+    const message = t(messageKey) || t(analysis.negativeStreak > 3 ? 'lambda_observer_negative_streak' : 'lambda_observer_default');
 
     return {
         mode: 'observer',
@@ -86,7 +86,7 @@ export function getReflejoContextualState(
     if (entry.level === 3 && entryICC !== null && entryICC < 0.35) {
         return {
             mode: 'anchor',
-            message: t('reflejo_contextual_low_icc'),
+            message: t('lambda_contextual_low_icc'),
             color: 'hsl(var(--reflejo-anchor))',
             animation: 'pulse-slow'
         };
@@ -96,7 +96,7 @@ export function getReflejoContextualState(
     if (entry.intensity >= 7) {
         return {
             mode: 'anchor',
-            message: t(`reflejo_anchor_high_intensity_${profile}`) || t('reflejo_anchor_high_intensity'),
+            message: t(`lambda_anchor_high_intensity_${profile}`) || t('lambda_anchor_high_intensity'),
             color: 'hsl(var(--reflejo-anchor))',
             animation: 'pulse-slow'
         };
@@ -108,7 +108,7 @@ export function getReflejoContextualState(
     if (sortedSameDay.length > 0 && sortedSameDay[0].id === entry.id) {
         return {
             mode: 'mentor',
-            message: t('reflejo_contextual_first_of_day'),
+            message: t('lambda_contextual_first_of_day'),
             color: 'hsl(var(--reflejo-mentor))',
             animation: 'float'
         };
@@ -125,7 +125,7 @@ export function getReflejoContextualState(
             if (commonDist) {
                 return {
                     mode: 'observer',
-                    message: t('reflejo_contextual_recurring_distortion'),
+                    message: t('lambda_contextual_recurring_distortion'),
                     color: 'hsl(var(--reflejo-observer))',
                     animation: 'neutral'
                 };

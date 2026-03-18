@@ -15,25 +15,25 @@ Podrás elegir entre varios enfoques clínicos según tu necesidad actual:
 
 ---
 
-## 2. Reflejo λ: Tu Eco Cognitivo
-El avatar **Reflejo** no es solo decorativo. Es una representación visual de tu "Observador Consciente" y adopta diferentes roles según cómo te sientas:
+## 2. Lambda λ: Tu Eco Cognitivo
+El avatar **Lambda** no es solo decorativo. Es una representación visual de tu \"Observador Consciente\" y adopta diferentes roles según cómo te sientas:
 
-- **🔵 Ancla (Nivel 8-10)**: Cuando la intensidad emocional es extrema, Reflejo se vuelve sólido y azul. Su objetivo es la seguridad física y la desactivación biológica (respiración 2-5-3).
-- **⚪ Observador (Nivel 4-7)**: En niveles moderados, Reflejo te ayuda a identificar distorsiones cognitivas y buscar evidencia en contra de tus pensamientos automáticos.
-- **🟡 Mentor (Nivel 0-3)**: Cuando estás bien, Reflejo te acompaña en el mantenimiento del bienestar, fomentando la gratitud y la activación conductual.
+- **🔵 Ancla (Nivel 8-10)**: Cuando la intensidad emocional es extrema, Lambda se vuelve sólido y azul. Su objetivo es la seguridad física y la desactivación biológica (respiración 2-5-3).
+- **⚪ Observador (Nivel 4-7)**: En niveles moderados, Lambda te ayuda a identificar distorsiones cognitivas y buscar evidencia en contra de tus pensamientos automáticos.
+- **🟡 Mentor (Nivel 0-3)**: Cuando estás bien, Lambda te acompaña en el mantenimiento del bienestar, fomentando la gratitud y la activación conductual.
 
 ---
 
 ## 3. El Ciclo CBT de 3 Niveles
 Cognit λ organiza tu trabajo en tres niveles de profundidad:
 
-1.  **Nivel 1 (Autobservación)**: Registro básico de qué pensamientos te visitan y su intensidad. Ideal para cuando tienes poco tiempo o estás empezando.
-2.  **Nivel 2 (Desplazamiento Creativo)**: Un espacio para expresar tus pensamientos de forma libre o metafórica antes de analizarlos.
-3.  **Nivel 3 (Reestructuración Completa)**: El núcleo del TCC. Aquí identificarás el disparador, el pensamiento automático, lo desafiarás con evidencia y crearás una respuesta racional alternativa.
+1.  **Nivel 1 (Observación)**: Registro básico de qué pensamientos te visitan y su intensidad. Ideal para cuando tienes poco tiempo o estás empezando.
+2.  **Nivel 2 (Desplazamiento)**: Un espacio para ganar perspectiva externa usando la técnica del amigo antes de analizar los pensamientos.
+3.  **Nivel 3 (Reestructuración)**: El núcleo del TCC. Aquí identificarás el disparador, el pensamiento automático, lo desafiarás con evidencia y crearás una respuesta racional alternativa.
 
 ---
 
-## 4. El "Círculo Virtuoso" (Panel de Análisis)
+## 4. El \"Círculo Virtuoso\" (Panel de Análisis)
 En la pestaña de **Análisis**, verás el gráfico del **Círculo Virtuoso**. Este gráfico correlaciona tres factores clave:
 - **Calidad del Sueño**
 - **Nivel de Actividad**
@@ -43,7 +43,7 @@ La meta es observar cómo pequeños cambios en tu conducta (como dormir mejor o 
 
 ---
 
-## 5. Protocolo SOS y Seguridad
+## 5. Protocolo Lambda SOS y Seguridad
 Si detectamos lenguaje de alto riesgo o una intensidad emocional máxima (9-10), la aplicación activará automáticamente el **Protocolo SOS**.
 - **Respiración Guiada**: Instrucciones inmediatas para calmar el sistema nervioso.
 - **Tu Plan de Seguridad**: Verás tus contactos de emergencia y las frases de afrontamiento que hayas configurado en Ajustes.
