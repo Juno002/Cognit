@@ -71,6 +71,8 @@
   "toast_achievement_unlocked_title": "🎉 Achievement Unlocked!",
   "toast_error_saving_title": "❌ Error saving",
   "toast_error_saving_desc": "Could not save the session.",
+  "vault_locked_title": "Vault Locked",
+  "vault_locked_background_desc": "Session expired while the app was in the background for your security.",
   "toast_session_deleted_title": "🗑️ Session deleted",
   "toast_error_deleting_title": "❌ Error deleting",
   "toast_journal_reset_title": "Journal reset",

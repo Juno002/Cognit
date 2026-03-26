@@ -59,7 +59,8 @@ export const useVault = () => {
 
 const ATTEMPT_LIMIT = 5;
 const LOCK_BASE_MS = 30_000;
-const AUTOLOCK_MINUTES = 3;
+const AUTOLOCK_MINUTES = 10;
+const BACKGROUND_LOCK_GRACE_MS = 5 * 60 * 1000; // 5 minutes grace period
 
 export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -72,6 +73,7 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const failedAttemptsRef = useRef<number>(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const passwordRef = useRef<string|null>(null);
+  const backgroundTimestampRef = useRef<number | null>(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
@@ -106,8 +108,21 @@ export const VaultProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     
     const onVis = () => {
-      if (document.visibilityState === "hidden" && !locked) {
-        lock();
+      if (document.visibilityState === "hidden") {
+        backgroundTimestampRef.current = Date.now();
+        // We don't lock immediately. The timer or the next visibilitychange to 'visible' will check.
+      } else if (document.visibilityState === "visible") {
+        if (backgroundTimestampRef.current && !locked) {
+          const elapsed = Date.now() - backgroundTimestampRef.current;
+          if (elapsed > BACKGROUND_LOCK_GRACE_MS) {
+            lock();
+            toast({
+              title: t('vault_locked_title') || "Bóveda Bloqueada",
+              description: t('vault_locked_background_desc') || "La sesión expiró mientras la aplicación estaba en segundo plano.",
+            });
+          }
+        }
+        backgroundTimestampRef.current = null;
       }
     };
     

@@ -25,7 +25,24 @@ interface WellnessModeProps {
 
 const GratitudeJournal: React.FC<{ onAddGratitude: (items: string[]) => void; isSaving: boolean; }> = ({ onAddGratitude, isSaving }) => {
     const { t } = useTranslation();
-    const [items, setItems] = useState(['', '', '']);
+    const STORAGE_KEY = 'wellness_gratitude_draft';
+    const [items, setItems] = useState<string[]>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return ['', '', ''];
+                }
+            }
+        }
+        return ['', '', ''];
+    });
+
+    React.useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }, [items]);
     
     const handleItemChange = (index: number, value: string) => {
         const newItems = [...items];
@@ -38,6 +55,7 @@ const GratitudeJournal: React.FC<{ onAddGratitude: (items: string[]) => void; is
         if (gratitudeItems.length === 0) return;
         onAddGratitude(gratitudeItems);
         setItems(['', '', '']); // Reset form
+        localStorage.removeItem(STORAGE_KEY);
     };
     
     const canSubmit = useMemo(() => items.some(item => item.trim() !== ''), [items]);

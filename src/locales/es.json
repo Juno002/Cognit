@@ -42,6 +42,8 @@
   "toast_achievement_unlocked_title": "🎉 ¡Logro desbloqueado!",
   "toast_error_saving_title": "❌ Error al guardar",
   "toast_error_saving_desc": "No se pudo guardar la sesión.",
+  "vault_locked_title": "Bóveda Bloqueada",
+  "vault_locked_background_desc": "La sesión expiró mientras la aplicación estaba en segundo plano por seguridad.",
   "toast_session_deleted_title": "🗑️ Sesión eliminada",
   "toast_error_deleting_title": "❌ Error al eliminar",
   "toast_journal_reset_title": "🗑️ Diario reiniciado",

@@ -27,6 +27,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/hooks/use-translation';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { useFormPersistence } from '@/hooks/use-form-persistence';
 
 
 const formSchema = z.object({
@@ -162,6 +163,30 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
 
   useImperativeHandle(formRef, () => form);
 
+  // Persistence
+  const { clearDraft } = useFormPersistence({
+    form,
+    namespace: 'thought-form',
+  });
+
+  // Persist internal state not handled by react-hook-form
+  useEffect(() => {
+    const saved = sessionStorage.getItem('thought-form-internal');
+    if (saved) {
+      try {
+        const { arrowChain: savedChain, isArrowComplete: savedComplete } = JSON.parse(saved);
+        if (savedChain) setArrowChain(savedChain);
+        if (savedComplete !== undefined) setIsArrowComplete(savedComplete);
+      } catch (e) {
+        console.warn("Failed to recover internal thought form state", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('thought-form-internal', JSON.stringify({ arrowChain, isArrowComplete }));
+  }, [arrowChain, isArrowComplete]);
+
   const watchedLevel = form.watch('level');
   const watchedEmotion = form.watch('emotion');
   const watchedIntensity = form.watch('intensity');
@@ -216,6 +241,8 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
         promptUsed: prompt,
         __draft: false,
     };
+    clearDraft();
+    sessionStorage.removeItem('thought-form-internal');
     onSubmit(entryData);
   };
   
