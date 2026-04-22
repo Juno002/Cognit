@@ -65,8 +65,10 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('/', responseClone));
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('/', responseClone));
+          }
           return response;
         })
         .catch(() => caches.match(event.request).then(response => response || caches.match('/')).then(response => response || caches.match('/offline')))

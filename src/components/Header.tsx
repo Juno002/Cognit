@@ -27,11 +27,10 @@ interface HeaderProps {
     isZipping: boolean;
     crisisConfig: CrisisConfig;
     updateCrisisConfig: (config: Partial<CrisisConfig>) => void;
-    lastPrompt: string;
     onNavigate: (tab: 'analysis') => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ dbStatus: _dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, onPrintReport, isZipping, crisisConfig, updateCrisisConfig, lastPrompt, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ dbStatus: _dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, onPrintReport, isZipping, crisisConfig, updateCrisisConfig, onNavigate }) => {
   const { t } = useTranslation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -72,7 +71,6 @@ const Header: React.FC<HeaderProps> = ({ dbStatus: _dbStatus, isSaving, onReset,
                 <SettingsModal 
                     crisisConfig={crisisConfig}
                     updateCrisisConfig={updateCrisisConfig}
-                    lastPrompt={lastPrompt}
                     onImport={onImport}
                     onExportJson={onExportJson}
                     onExportCsv={onExportCsv}

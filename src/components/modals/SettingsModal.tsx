@@ -58,7 +58,6 @@ import {
 interface SettingsModalProps {
     crisisConfig: CrisisConfig;
     updateCrisisConfig: (config: Partial<CrisisConfig>) => void;
-    lastPrompt: string;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onExportJson: () => void;
     onExportCsv: () => void;
@@ -204,7 +203,6 @@ const ThemeSelector: React.FC = () => {
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
     crisisConfig, 
     updateCrisisConfig, 
-    lastPrompt,
     onImport,
     onExportJson,
     onExportCsv,
@@ -320,19 +318,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                 </div>
 
-                <Separator />
-
-                <div className="space-y-2">
-                    <h3 className="font-semibold">{t('settings_daily_reminder_title')}</h3>
-                    <div className="flex items-center justify-between gap-4">
-                        <Label htmlFor="notificationTime" className="flex-1">{t('settings_daily_reminder_time')}</Label>
-                        <Input id="notificationTime" type="time" defaultValue="21:00" className="w-[120px]"/>
-                    </div>
-                    <div className="mt-4 space-y-2">
-                        <p className="text-sm text-muted-foreground">{t('settings_last_prompt')}:</p>
-                        <div className="text-sm italic text-muted-foreground p-3 bg-muted rounded-md border border-dashed">{lastPrompt || t('settings_no_recent_prompt')}</div>
-                    </div>
-                </div>
             </TabsContent>
 
             <TabsContent value="data" className="space-y-6 pt-2">

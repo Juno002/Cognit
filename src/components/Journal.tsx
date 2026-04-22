@@ -84,7 +84,6 @@ export default function Journal() {
     pagination,
     loadMoreEntries,
     isSaving,
-    lastPrompt,
     exposureState,
     addFearItem,
     updateFearItem,
@@ -549,7 +548,6 @@ export default function Journal() {
           isZipping={isZipping}
           crisisConfig={crisisConfig}
           updateCrisisConfig={updateCrisisConfig}
-          lastPrompt={lastPrompt}
           onNavigate={handleNavigate}
         />
         <main className="flex-grow container mx-auto p-2 sm:p-4 md:p-6 pb-24">
