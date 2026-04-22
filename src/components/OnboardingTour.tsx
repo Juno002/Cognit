@@ -1,9 +1,8 @@
 
 // src/components/OnboardingTour.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { X, ArrowLeft, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 import type { Tour } from '@/types';
 

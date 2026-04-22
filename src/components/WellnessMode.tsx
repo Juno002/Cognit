@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,46 +16,44 @@ import SleepDiary from './SleepDiary';
 
 interface WellnessModeProps {
     gratitudeEntries: GratitudeEntry[];
-    onAddGratitude: (items: string[]) => void;
-    onAddMeditation: (type: 'breathing' | 'body_scan', duration: number) => void;
+    onAddGratitude: (items: string[]) => Promise<void> | void;
+    gratitudeDraft?: string[];
+    onSaveGratitudeDraft: (items: string[]) => Promise<void> | void;
+    onClearGratitudeDraft: () => Promise<void> | void;
     onOpenJournal: (open: boolean) => void;
     sleepEntries: SleepEntry[];
     onAddSleepEntry: (data: Omit<SleepEntry, 'id' | 'sleepEfficiencyPct' | 'crossesMidnight' | 'timeInBedMin' | 'timeAsleepMin' | 'createdAt' | 'updatedAt' | 'linkedJournalEntryId'>) => void;
 }
 
-const GratitudeJournal: React.FC<{ onAddGratitude: (items: string[]) => void; isSaving: boolean; }> = ({ onAddGratitude, isSaving }) => {
-    const { t } = useTranslation();
-    const STORAGE_KEY = 'wellness_gratitude_draft';
-    const [items, setItems] = useState<string[]>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    return JSON.parse(saved);
-                } catch (e) {
-                    return ['', '', ''];
-                }
-            }
-        }
-        return ['', '', ''];
-    });
+const emptyGratitudeDraft = ['', '', ''];
 
-    React.useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }, [items]);
+const GratitudeJournal: React.FC<{
+    onAddGratitude: (items: string[]) => Promise<void> | void;
+    isSaving: boolean;
+    draft?: string[];
+    onSaveDraft: (items: string[]) => Promise<void> | void;
+    onClearDraft: () => Promise<void> | void;
+}> = ({ onAddGratitude, isSaving, draft, onSaveDraft, onClearDraft }) => {
+    const { t } = useTranslation();
+    const [items, setItems] = useState<string[]>(draft?.length ? draft : emptyGratitudeDraft);
+
+    useEffect(() => {
+        if (draft?.length) setItems(draft);
+    }, [draft]);
     
     const handleItemChange = (index: number, value: string) => {
         const newItems = [...items];
         newItems[index] = value;
         setItems(newItems);
+        void onSaveDraft(newItems);
     };
 
     const handleSave = async () => {
         const gratitudeItems = items.filter(item => item.trim() !== '');
         if (gratitudeItems.length === 0) return;
-        onAddGratitude(gratitudeItems);
-        setItems(['', '', '']); // Reset form
-        localStorage.removeItem(STORAGE_KEY);
+        await onAddGratitude(gratitudeItems);
+        setItems(emptyGratitudeDraft);
+        await onClearDraft();
     };
     
     const canSubmit = useMemo(() => items.some(item => item.trim() !== ''), [items]);
@@ -89,7 +87,7 @@ const GratitudeJournal: React.FC<{ onAddGratitude: (items: string[]) => void; is
 };
 
 const GratitudeHistory: React.FC<{ entries: GratitudeEntry[]; t: (key: string) => string; }> = ({ entries, t }) => {
-    const sortedEntries = useMemo(() => entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [entries]);
+    const sortedEntries = useMemo(() => [...entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [entries]);
     
     if (entries.length === 0) {
         return null;
@@ -121,7 +119,7 @@ const GratitudeHistory: React.FC<{ entries: GratitudeEntry[]; t: (key: string) =
     )
 }
 
-const WellnessMode: React.FC<WellnessModeProps> = ({ gratitudeEntries, onAddGratitude, onAddMeditation, onOpenJournal, sleepEntries, onAddSleepEntry }) => {
+const WellnessMode: React.FC<WellnessModeProps> = ({ gratitudeEntries, onAddGratitude, gratitudeDraft, onSaveGratitudeDraft, onClearGratitudeDraft, onOpenJournal, sleepEntries, onAddSleepEntry }) => {
     const { t } = useTranslation();
     const [isSavingGratitude, setIsSavingGratitude] = useState(false);
     
@@ -137,7 +135,13 @@ const WellnessMode: React.FC<WellnessModeProps> = ({ gratitudeEntries, onAddGrat
                 <SleepDiary entries={sleepEntries} onAddEntry={onAddSleepEntry} />
             </div>
             <div className="grid md:grid-cols-2 gap-6 items-start">
-                <GratitudeJournal onAddGratitude={handleAddGratitude} isSaving={isSavingGratitude} />
+                <GratitudeJournal
+                    onAddGratitude={handleAddGratitude}
+                    isSaving={isSavingGratitude}
+                    draft={gratitudeDraft}
+                    onSaveDraft={onSaveGratitudeDraft}
+                    onClearDraft={onClearGratitudeDraft}
+                />
                 <DefusionGame onOpenJournal={() => onOpenJournal(true)} />
                 <GuidedMeditation />
                 <GratitudeHistory entries={gratitudeEntries} t={t} />

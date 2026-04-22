@@ -1,12 +1,11 @@
 
 // src/components/auth/SetupVault.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useVault } from "@/context/vault/VaultProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
-import { Separator } from "../ui/separator";
 
 export const SetupVault: React.FC = () => {
   const { createVault } = useVault();
@@ -22,30 +21,7 @@ export const SetupVault: React.FC = () => {
     if (pass !== pass2) return setError(t('setup_vault_error_mismatch'));
     setLoading(true);
     try {
-      await createVault(pass, { 
-          cbtEntries: [],
-          exposureState: { fearLadder: [], logs: [] },
-          activationState: { values: [], activities: [] },
-          goals: [],
-          gratitudeEntries: [],
-          sleepEntries: [],
-          achievements: [],
-          config: {
-            crisisConfig: {
-              copingPhrase: t('default_coping_phrase'),
-              contacts: []
-            },
-            lastPrompt: '',
-            ruminationCount: 0,
-            tourState: {
-                journal: { seen: false },
-                activation: { seen: false },
-                goals: { seen: false },
-                exposure: { seen: false },
-                wellness: { seen: false },
-            }
-          }
-      });
+      await createVault(pass);
     } catch (e: any) {
       setError(e.message || t('setup_vault_error_generic'));
     } finally { 

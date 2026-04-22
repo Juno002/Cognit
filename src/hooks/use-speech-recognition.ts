@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface UseSpeechRecognitionOptions {
   onResult?: (transcript: string) => void;
@@ -9,6 +10,8 @@ interface UseSpeechRecognitionOptions {
 }
 
 export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) => {
+  const { locale } = useTranslation();
+  const { onResult, onError } = options;
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   
@@ -24,7 +27,7 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
     const recognition = recognitionRef.current;
 
     recognition.continuous = true;
-    recognition.lang = 'es-ES';
+    recognition.lang = locale === 'en' ? 'en-US' : 'es-ES';
     recognition.interimResults = false;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -34,15 +37,15 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
           finalTranscript += event.results[i][0].transcript;
         }
       }
-      if (options.onResult && finalTranscript) {
-        options.onResult(finalTranscript);
+      if (onResult && finalTranscript) {
+        onResult(finalTranscript);
       }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error);
-      if (options.onError) {
-        options.onError(event.error);
+      if (onError) {
+        onError(event.error);
       }
       setIsListening(false);
     };
@@ -57,7 +60,7 @@ export const useSpeechRecognition = (options: UseSpeechRecognitionOptions = {}) 
             recognitionRef.current.stop();
         }
     };
-  }, [isSupported, options.onResult, options.onError]);
+  }, [isSupported, locale, onResult, onError]);
 
   const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {

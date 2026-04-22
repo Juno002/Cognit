@@ -24,7 +24,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useTranslation } from '@/hooks/use-translation';
-import { useToast } from '@/hooks/use-toast';
 
 interface ExposureModeProps {
     fearLadder: FearItem[];
@@ -169,7 +168,6 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
     onAddLog
 }) => {
     const { t, locale } = useTranslation();
-    const { toast } = useToast();
     const [isFearFormOpen, setIsFearFormOpen] = useState(false);
     const [isLogFormOpen, setIsLogFormOpen] = useState<FearItem | null>(null);
     const [editingFearItem, setEditingFearItem] = useState<FearItem | undefined>(undefined);
@@ -181,7 +179,7 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
 
     const progressData = useMemo(() => {
         if (logs.length === 0) return [];
-        const dataByItem: Record<string, {name: string, data: {date: string, anxiety: number}[]}> = {};
+        const dataByItem: Record<string, {name: string, data: {date: string, timestamp: number, anxiety: number}[]}> = {};
         
         logs.forEach(log => {
             const fearItem = fearLadder.find(f => f.id === log.fearItemId);
@@ -192,13 +190,14 @@ const ExposureMode: React.FC<ExposureModeProps> = ({
             }
             dataByItem[log.fearItemId].data.push({
                 date: format(new Date(log.date), 'dd MMM', { locale: dateLocale }),
+                timestamp: new Date(log.date).getTime(),
                 anxiety: log.finalAnxiety
             });
         });
 
         return Object.values(dataByItem).map(item => ({
             name: item.name,
-            data: item.data.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            data: item.data.sort((a,b) => a.timestamp - b.timestamp)
         }));
 
     }, [logs, fearLadder, dateLocale]);

@@ -160,9 +160,92 @@ export const generateFhirObservation = (entries: ThoughtEntry[], stats: JournalS
   const latestEntry = entries[0];
   if (!latestEntry) return null;
 
+  const latestIcc = calculateICC(latestEntry.originalIntensity, latestEntry.finalCredibility);
+  const distressScore = Math.max(latestEntry.intensity || 0, stats.avgIntensity || 0);
+  const interpretation = distressScore >= 9
+    ? [{
+        coding: [{
+          system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+          code: "HH",
+          display: "Critical high",
+        }],
+        text: "Very high self-reported distress. This is not a diagnosis; consider using the safety plan and urgent local support if risk is present.",
+      }]
+    : distressScore >= 7
+      ? [{
+          coding: [{
+            system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+            code: "H",
+            display: "High",
+          }],
+          text: "Elevated self-reported distress. This is descriptive self-report data, not a clinical diagnosis.",
+        }]
+      : undefined;
+
+  const component = [
+    {
+      code: { text: "Total Sessions" },
+      valueInteger: stats.total,
+    },
+    {
+      code: { text: "Consistency Streak (days)" },
+      valueInteger: stats.streak,
+    },
+    {
+      code: { text: "Average Self-Reported Distress" },
+      valueQuantity: {
+        value: stats.avgIntensity,
+        unit: "/10",
+        system: "http://unitsofmeasure.org",
+        code: "{score}",
+      },
+    },
+    {
+      code: { text: "Most Frequent Emotion" },
+      valueString: stats.topEmotion,
+    },
+    {
+      code: { text: "Latest Entry Emotion" },
+      valueString: latestEntry.emotion,
+    },
+    {
+      code: { text: "Latest Entry Intensity" },
+      valueQuantity: {
+        value: latestEntry.intensity,
+        unit: "/10",
+        system: "http://unitsofmeasure.org",
+        code: "{score}",
+      },
+    },
+  ];
+
+  if (latestIcc !== null) {
+    component.push({
+      code: { text: "Latest Cognitive Change Index (ICC)" },
+      valueQuantity: {
+        value: parseFloat(latestIcc),
+        unit: "ratio",
+        system: "http://unitsofmeasure.org",
+        code: "{ratio}",
+      },
+    });
+  }
+
+  if (stats.avgICC !== null) {
+    component.push({
+      code: { text: "Average Cognitive Change Index (ICC)" },
+      valueQuantity: {
+        value: parseFloat(stats.avgICC),
+        unit: "ratio",
+        system: "http://unitsofmeasure.org",
+        code: "{ratio}",
+      },
+    });
+  }
+
   return {
     resourceType: "Observation",
-    id: `cbt-summary-${new Date().getTime()}`,
+    id: `cognit-self-report-summary-${new Date().getTime()}`,
     status: "final",
     category: [
       {
@@ -179,12 +262,12 @@ export const generateFhirObservation = (entries: ThoughtEntry[], stats: JournalS
     code: {
       coding: [
         {
-          system: "http://loinc.org",
-          code: "89123-7", // Example LOINC code for CBT panel
-          display: "Cognitive Behavioral Therapy panel",
+          system: "https://cognit.app/fhir/CodeSystem/self-report",
+          code: "cbt-journal-summary",
+          display: "CBT journal self-report summary",
         },
       ],
-      text: "CBT Journal Entry",
+      text: "Cognit CBT journal self-report summary",
     },
     subject: {
       display: "User (Self-reported)",
@@ -197,54 +280,13 @@ export const generateFhirObservation = (entries: ThoughtEntry[], stats: JournalS
       },
     ],
     valueString: t('fhir_latest_entry_value', { date: latestEntry.date }),
-    interpretation: [
+    note: [
       {
-        coding: [
-          {
-            system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-            code: "N",
-            display: "Normal",
-          },
-        ],
-        text: t('fhir_interpretation_text', { intensity: stats.avgIntensity, icc: stats.avgICC ?? 'N/A' }),
+        text: "Cognit exports self-reported journaling data for portability. This Observation is not a diagnosis, treatment order, medical-device output, or clinical record replacement.",
       },
     ],
-    component: [
-      {
-        code: { text: "Total Sessions" },
-        valueInteger: stats.total,
-      },
-      {
-        code: { text: "Consistency Streak (days)" },
-        valueInteger: stats.streak,
-      },
-      {
-        code: { text: "Most Frequent Emotion" },
-        valueString: stats.topEmotion,
-      },
-      {
-        code: { text: "Latest Entry Emotion" },
-        valueString: latestEntry.emotion,
-      },
-      {
-        code: { text: "Latest Entry Intensity" },
-        valueQuantity: {
-          value: latestEntry.intensity,
-          unit: "/10",
-          system: "http://unitsofmeasure.org",
-          code: "{score}",
-        },
-      },
-      {
-        code: { text: "Cognitive Change Index (ICC)" },
-        valueQuantity: {
-          value: parseFloat(calculateICC(latestEntry.originalIntensity, latestEntry.finalCredibility) ?? '0'),
-          unit: "ratio",
-          system: "http://unitsofmeasure.org",
-          code: "{ratio}",
-        }
-      }
-    ],
+    ...(interpretation ? { interpretation } : {}),
+    component,
   };
 };
 

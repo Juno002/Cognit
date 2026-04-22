@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { JournalStats } from '@/hooks/use-cbt-journal';
 import { useTranslation } from '@/hooks/use-translation';
 

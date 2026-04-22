@@ -1,7 +1,7 @@
 'use client';
 
 import { useOnlineStatus } from '@/hooks/use-online-status';
-import { Wifi, WifiOff, CheckCircle } from 'lucide-react';
+import { WifiOff, CheckCircle } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
 export function OnlineIndicator() {

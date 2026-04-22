@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from 'react';
-import { UseFormReturn, FieldValues, Path, DefaultValues } from 'react-hook-form';
+import { UseFormReturn, FieldValues, Path } from 'react-hook-form';
 
 interface UseFormPersistenceOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -9,12 +9,17 @@ interface UseFormPersistenceOptions<T extends FieldValues> {
   onRecover?: (data: T) => void;
   exclude?: Path<T>[];
   enabled?: boolean;
+  debounceMs?: number;
+  loadDraft?: () => T | null | undefined | Promise<T | null | undefined>;
+  saveDraft?: (data: T) => void | Promise<void>;
+  clearDraft?: () => void | Promise<void>;
 }
 
 /**
- * Custom hook to persist react-hook-form state to sessionStorage.
- * This ensures that if the app reloads or the process is killed, 
- * the user can resume their work.
+ * Persists react-hook-form state through an explicit storage adapter.
+ *
+ * Sensitive Cognit drafts must live in the encrypted vault. This hook
+ * intentionally has no localStorage/sessionStorage fallback.
  */
 export function useFormPersistence<T extends FieldValues>({
   form,
@@ -22,13 +27,18 @@ export function useFormPersistence<T extends FieldValues>({
   onRecover,
   exclude = [],
   enabled = true,
+  debounceMs = 600,
+  loadDraft,
+  saveDraft,
+  clearDraft: clearDraftAdapter,
 }: UseFormPersistenceOptions<T>) {
-  const STORAGE_KEY = `form_draft_${namespace}`;
   const isRecovering = useRef(false);
+  const hasRecovered = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Save changes to storage
   const saveToStorage = useCallback((values: T) => {
-    if (isRecovering.current || !enabled) return;
+    if (isRecovering.current || !enabled || !saveDraft) return;
     
     // Filter out excluded fields if necessary
     const dataToSave = { ...values };
@@ -36,29 +46,35 @@ export function useFormPersistence<T extends FieldValues>({
       delete dataToSave[field];
     });
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch (e) {
-      console.warn("Failed to save form draft to localStorage:", e);
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
     }
-  }, [STORAGE_KEY, exclude, enabled]);
+
+    saveTimer.current = setTimeout(() => {
+      void Promise.resolve(saveDraft(dataToSave as T)).catch((error) => {
+        console.warn(`Failed to save ${namespace} form draft:`, error);
+      });
+    }, debounceMs);
+  }, [debounceMs, exclude, enabled, namespace, saveDraft]);
 
   // Load from storage
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !loadDraft || hasRecovered.current) return;
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+    let cancelled = false;
+
+    void Promise.resolve(loadDraft()).then((saved) => {
+      hasRecovered.current = true;
+      if (!saved || cancelled) return;
       try {
-        const parsed = JSON.parse(saved) as T;
         isRecovering.current = true;
         
         // Reset form with saved values, merging with current default values
         // We use reset(parsed) to ensure the dirty state and values are restored correctly.
-        form.reset(parsed as any, { keepDefaultValues: true });
+        form.reset(saved as any, { keepDefaultValues: true });
         
         if (onRecover) {
-          onRecover(parsed);
+          onRecover(saved);
         }
         
         isRecovering.current = false;
@@ -66,23 +82,39 @@ export function useFormPersistence<T extends FieldValues>({
         console.error("Failed to recover form draft:", e);
         isRecovering.current = false;
       }
-    }
-  }, [form, STORAGE_KEY, onRecover, enabled]);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form, loadDraft, onRecover, enabled]);
 
   // Handle value changes
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !saveDraft) return;
 
     const subscription = form.watch((value) => {
       saveToStorage(value as T);
     });
     
-    return () => subscription.unsubscribe();
-  }, [form, saveToStorage, enabled]);
+    return () => {
+      subscription.unsubscribe();
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+      }
+    };
+  }, [form, saveDraft, saveToStorage, enabled]);
 
   const clearDraft = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-  }, [STORAGE_KEY]);
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+    }
+    if (!clearDraftAdapter) return;
+
+    void Promise.resolve(clearDraftAdapter()).catch((error) => {
+      console.warn(`Failed to clear ${namespace} form draft:`, error);
+    });
+  }, [clearDraftAdapter, namespace]);
 
   return { clearDraft };
 }

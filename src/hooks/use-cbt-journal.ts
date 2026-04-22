@@ -2,15 +2,17 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisContact, CrisisConfig, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState, ClinicalProfile } from '@/types';
-import { todayISO, calculateICC, normalizeText } from '@/lib/utils';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import type { ThoughtEntry, ThoughtEntryData, Achievement, CrisisConfig, FilterState, CognitiveDistortion, FearItem, ExposureLog, ExposureState, ActivationState, ActivationValue, ActivationActivity, Subtask, Goal, GratitudeEntry, SleepEntry, TourState, ClinicalProfile } from '@/types';
+import { todayISO, calculateICC } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH, MIN_SESSIONS_FOR_ANALYSIS, RUMINATION_THRESHOLD, ROWS_PER_PAGE, BACKUP_REMINDER_DAYS } from '@/lib/constants';
 import { detectCognitiveDistortions } from '@/lib/distortions';
 import { useTranslation } from './use-translation';
 import { getContextualPrompt } from '@/lib/prompts';
-import { useVault, type VaultData } from '@/context/vault/VaultProvider';
+import { useVault, type ThoughtFormDraft, type VaultData, type VaultDrafts } from '@/context/vault/VaultProvider';
 import { useToast } from './use-toast';
+import { createCognitBackupEnvelope, isCognitBackupEnvelope, readCognitBackupPayload } from '@/lib/backup';
+import { detectCrisisRisk } from '@/lib/crisis';
 
 
 // --- Stats Calculation ---
@@ -45,6 +47,12 @@ export interface JournalAnalysis {
 }
 
 export type TourSection = 'journal' | 'activation' | 'goals' | 'exposure' | 'wellness';
+
+export type AddEntryResult =
+    | { status: 'saved'; isDraft: boolean; entryId: string; newAchievements: Achievement[]; distortions: CognitiveDistortion[]; reclassifiedLevel: number | null }
+    | { status: 'crisis_detected' }
+    | { status: 'rumination_blocked' }
+    | { status: 'validation_error'; message: string };
 
 export interface PaginationState {
     currentPage: number;
@@ -206,22 +214,30 @@ const generateICCFeedback = (iccAnalysis: ReturnType<typeof analyzeICCByEmotion>
         feedback += t('feedback_icc_strong_point', { emotion: best.emotion, icc: best.avgICC });
     }
     if (worst && parseFloat(worst.avgICC) <= 0.35 && worst.emotion !== best.emotion) {
-        if (feedback) feedback += '<br/><br/>';
+        if (feedback) feedback += '\n\n';
         feedback += t('feedback_icc_improvement_point', { emotion: worst.emotion, icc: worst.avgICC });
     }
     return feedback || null;
 };
 
-const compareLastDays = (rows: ThoughtEntry[], goals: Goal[], days: number, t: (key: string, options?: any) => string) => {
+export const compareLastDays = (rows: ThoughtEntry[], goals: Goal[], days: number, t: (key: string, options?: any) => string) => {
     if (rows.length < 10) return { error: t('feedback_compare_insufficient_data_10') };
-    const sorted = rows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     const today = new Date(todayISO());
-    const cutoffDate = new Date(today);
-    cutoffDate.setDate(today.getDate() - days);
+    const recentStart = new Date(today);
+    recentStart.setDate(today.getDate() - days + 1);
+    const previousStart = new Date(recentStart);
+    previousStart.setDate(recentStart.getDate() - days);
 
-    const recentRows = sorted.filter(r => new Date(r.date) >= cutoffDate);
-    const olderRows = sorted.filter(r => new Date(r.date) < cutoffDate);
+    const recentRows = sorted.filter(r => {
+        const date = new Date(r.date);
+        return date >= recentStart && date <= today;
+    });
+    const olderRows = sorted.filter(r => {
+        const date = new Date(r.date);
+        return date >= previousStart && date < recentStart;
+    });
 
 
     if (olderRows.length < 3 || recentRows.length < 3) {
@@ -285,13 +301,13 @@ const detectPatterns = (rows: ThoughtEntry[], stats: JournalStats, t: (key: stri
             iccMsg = t('feedback_patterns_icc_low', { icc: stats.avgICC });
             iccType = 'warning';
         }
-        patterns.push({ text: iccMsg.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'), type: iccType });
+        patterns.push({ text: iccMsg, type: iccType });
     }
     return patterns;
 };
 
-const analyzeNegativeStreak = (rows: ThoughtEntry[]): number => {
-  const sorted = rows.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export const analyzeNegativeStreak = (rows: ThoughtEntry[]): number => {
+  const sorted = [...rows].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const uniqueDates = [...new Set(sorted.map(r => r.date))];
 
   let consecutiveDays = 0;
@@ -373,8 +389,8 @@ const getGoalStatus = (goal: Partial<Goal>): Goal['status'] => {
     return "in-progress";
 };
 
-// --- Main Hook ---
-export const useCbtJournal = () => {
+// --- Main Hook State ---
+const useCbtJournalState = () => {
     const { t, locale } = useTranslation();
     const vault = useVault();
     const { toast } = useToast();
@@ -389,6 +405,7 @@ export const useCbtJournal = () => {
     const [goals, setGoals] = useState<Goal[]>([]);
     const [gratitudeEntries, setGratitudeEntries] = useState<GratitudeEntry[]>([]);
     const [sleepEntries, setSleepEntries] = useState<SleepEntry[]>([]);
+    const [drafts, setDrafts] = useState<VaultDrafts>({});
     const [ruminationState, setRuminationState] = useState({ count: 0, isRuminationBlocked: false });
     const [lastPrompt, setLastPrompt] = useState('');
     const [tourState, setTourState] = useState<TourState | undefined>(undefined);
@@ -420,6 +437,7 @@ export const useCbtJournal = () => {
                 setGoals([]);
                 setGratitudeEntries([]);
                 setSleepEntries([]);
+                setDrafts({});
                 setAchievements([]);
                 setCrisisConfig({ copingPhrase: t('default_coping_phrase'), contacts: [] });
                 setTourState({ journal: { seen: false }, activation: { seen: false }, goals: { seen: false }, exposure: { seen: false }, wellness: { seen: false }});
@@ -461,6 +479,8 @@ export const useCbtJournal = () => {
                 const sleepData = data.sleepEntries || [];
                 setSleepEntries(sleepData);
 
+                setDrafts(data.drafts || {});
+
                 const ruminationCount = config.ruminationCount || 0;
                 setRuminationState({ count: ruminationCount, isRuminationBlocked: ruminationCount >= RUMINATION_THRESHOLD });
                 
@@ -470,7 +490,7 @@ export const useCbtJournal = () => {
                 setClinicalProfileState(config.clinicalProfile);
 
                 // Backup reminder logic
-                const lastBackupDateStr = localStorage.getItem('lastBackupDate'); 
+                const lastBackupDateStr = config.lastBackupAt;
                 if (lastBackupDateStr) {
                     const lastBackupDate = new Date(lastBackupDateStr);
                     const daysSinceBackup = (new Date().getTime() - lastBackupDate.getTime()) / (1000 * 3600 * 24);
@@ -584,7 +604,7 @@ export const useCbtJournal = () => {
                 return data.reverse();
             })(),
         }
-    }, [allEntries, goals, activationState.activities, sleepEntries, t]);
+    }, [allEntries, goals, activationState.activities, sleepEntries, clinicalProfile, t]);
     
     const updateFullState = async (newData: Partial<VaultData>) => {
         const currentData = vault.getData() || {} as VaultData;
@@ -598,6 +618,65 @@ export const useCbtJournal = () => {
         await vault.setData(finalData);
         refreshJournal();
     };
+
+    const updateDrafts = useCallback(async (nextDrafts: VaultDrafts) => {
+        const currentData = vault.getData();
+        if (!currentData) return;
+
+        const updatedData = { ...currentData, drafts: nextDrafts };
+        await vault.setData(updatedData);
+        setDrafts(nextDrafts);
+    }, [vault]);
+
+    const saveThoughtFormDraft = useCallback(async (draftPatch: ThoughtFormDraft) => {
+        const currentDrafts = vault.getData()?.drafts || drafts;
+        const nextDrafts = {
+            ...currentDrafts,
+            thoughtForm: {
+                ...(currentDrafts.thoughtForm || {}),
+                ...draftPatch,
+            },
+        };
+        await updateDrafts(nextDrafts);
+    }, [drafts, updateDrafts, vault]);
+
+    const clearThoughtFormDraft = useCallback(async () => {
+        const currentDrafts = vault.getData()?.drafts || drafts;
+        const remainingDrafts = { ...currentDrafts };
+        delete remainingDrafts.thoughtForm;
+        await updateDrafts(remainingDrafts);
+    }, [drafts, updateDrafts, vault]);
+
+    const saveGratitudeDraft = useCallback(async (items: string[]) => {
+        const currentDrafts = vault.getData()?.drafts || drafts;
+        await updateDrafts({ ...currentDrafts, gratitude: items });
+    }, [drafts, updateDrafts, vault]);
+
+    const clearGratitudeDraft = useCallback(async () => {
+        const currentDrafts = vault.getData()?.drafts || drafts;
+        const remainingDrafts = { ...currentDrafts };
+        delete remainingDrafts.gratitude;
+        await updateDrafts(remainingDrafts);
+    }, [drafts, updateDrafts, vault]);
+
+    const markBackupCreated = useCallback(async () => {
+        const currentData = vault.getData();
+        if (!currentData) return;
+
+        const updatedConfig = { ...currentData.config, lastBackupAt: new Date().toISOString() };
+        await vault.setData({ ...currentData, config: updatedConfig });
+        setShowBackupReminder(false);
+    }, [vault]);
+
+    const exportEncryptedBackup = useCallback(async () => {
+        const encryptedPackage = vault.getEncryptedPackage();
+        if (!encryptedPackage) {
+            throw new Error(t('toast_no_data_to_export_title'));
+        }
+
+        const envelope = await createCognitBackupEnvelope(encryptedPackage);
+        return JSON.stringify(envelope, null, 2);
+    }, [t, vault]);
 
     const incrementRuminationCount = async () => {
         const currentData = vault.getData() || {} as VaultData;
@@ -631,16 +710,19 @@ export const useCbtJournal = () => {
         setShowToursState(show);
     };
 
-    const addNewEntry = async (entryData: ThoughtEntryData) => {
+    const addNewEntry = async (entryData: ThoughtEntryData): Promise<AddEntryResult> => {
         setIsSaving(true);
         let detectedDistortions: CognitiveDistortion[] = [];
 
         try {
             if (ruminationState.isRuminationBlocked) {
-                throw new Error("Rumination threshold reached.");
+                return { status: 'rumination_blocked' };
             }
 
             const sanitizedEntryData: ThoughtEntryData = { ...entryData, note: entryData.note.trim() };
+            if (!sanitizedEntryData.note) {
+                return { status: 'validation_error', message: t('reflection_label') };
+            }
 
             let reclassifiedLevel: number | null = null;
             if (sanitizedEntryData.level === 3) {
@@ -652,7 +734,7 @@ export const useCbtJournal = () => {
                     sanitizedEntryData.level = reclassifiedLevel;
                     sanitizedEntryData.__draft = true;
                     const newCount = await incrementRuminationCount();
-                    if (newCount >= RUMINATION_THRESHOLD) throw new Error("Rumination threshold reached.");
+                    if (newCount >= RUMINATION_THRESHOLD) return { status: 'rumination_blocked' };
                 } else {
                     await resetRumination();
                 }
@@ -663,16 +745,24 @@ export const useCbtJournal = () => {
                 detectedDistortions = detectCognitiveDistortions(sanitizedEntryData.automaticThought, t, clinicalProfile);
             }
             
-            const noteText = normalizeText(sanitizedEntryData.note) + ' ' + normalizeText(sanitizedEntryData.automaticThought);
-            const isNegativeEmotion = ['ansioso', 'triste', 'irritado', 'cansado', 'anxious', 'sad', 'irritated', 'tired'].includes(normalizeText(sanitizedEntryData.emotion));
-            const intensityTrigger = sanitizedEntryData.intensity >= 9 && isNegativeEmotion;
-            
+            const allEmotions = t('emotions');
+            const negativeEmotionLabels = Array.isArray(allEmotions)
+                ? allEmotions.filter((_, i) => [1, 3, 4, 6].includes(i)).map((emotion) => emotion.label)
+                : [];
             const riskKeywords: string[] = t('risk_keywords') || [];
-            const keywordTrigger = riskKeywords.some((keyword: string) => noteText.includes(normalizeText(keyword)));
+            const crisisRisk = detectCrisisRisk({
+                note: sanitizedEntryData.note,
+                automaticThought: sanitizedEntryData.automaticThought,
+                situation: sanitizedEntryData.situation,
+                emotion: sanitizedEntryData.emotion,
+                intensity: sanitizedEntryData.intensity,
+                riskKeywords,
+                negativeEmotionLabels,
+            });
             
-            if(intensityTrigger || keywordTrigger) {
+            if(crisisRisk.risk) {
                 setCrisisDetected(true);
-                throw new Error("Crisis risk detected.");
+                return { status: 'crisis_detected' };
             }
 
             const newEntry: ThoughtEntry = {
@@ -684,7 +774,7 @@ export const useCbtJournal = () => {
             const currentData = vault.getData() || {} as VaultData;
             const newEntries = [newEntry, ...(currentData.cbtEntries || [])];
             const currentStats = calculateStats(newEntries, currentData.goals || [], t);
-            let newAchievements: Achievement[] = [];
+            const newAchievements: Achievement[] = [];
             const currentAchievements = currentData.achievements || [];
 
             const achievementDefinitions: any[] = t('all_achievements_definitions') || [];
@@ -714,7 +804,7 @@ export const useCbtJournal = () => {
 
             await updateFullState({ ...currentData, cbtEntries: newEntries, achievements: finalAchievements, config: newConfig });
             
-            return { isDraft: !!newEntry.__draft, newAchievements, distortions: detectedDistortions, reclassifiedLevel };
+            return { status: 'saved', entryId: newEntry.id, isDraft: !!newEntry.__draft, newAchievements, distortions: detectedDistortions, reclassifiedLevel };
         } finally {
             setIsSaving(false);
         }
@@ -746,18 +836,23 @@ export const useCbtJournal = () => {
                     if (!jsonText) throw new Error(t('error_invalid_import_file'));
                     
                     const importedData = JSON.parse(jsonText);
-                    
-                    // Basic validation of imported data structure
-                    if (!('cbtEntries' in importedData)) {
-                       throw new Error(t('error_invalid_import_file'));
-                    }
 
                     const currentData = vault.getData();
                     try {
-                        await updateFullState(importedData);
-                        localStorage.setItem('lastBackupDate', new Date().toISOString());
+                        if (isCognitBackupEnvelope(importedData)) {
+                            const encryptedPayload = await readCognitBackupPayload(importedData);
+                            await vault.importEncryptedPackage(encryptedPayload);
+                        } else {
+                            // Legacy plaintext exports are migrated and re-encrypted immediately.
+                            if (!('cbtEntries' in importedData) && !('schemaVersion' in importedData)) {
+                                throw new Error(t('error_invalid_import_file'));
+                            }
+                            await vault.replaceData(importedData);
+                        }
+                        await markBackupCreated();
+                        refreshJournal();
                         resolve({ success: true });
-                    } catch (updateError) {
+                    } catch (_updateError) {
                         // Attempt to restore previous state if update fails
                         if (currentData) await vault.setData(currentData);
                         throw new Error(t('error_import_failed_restored'));
@@ -998,7 +1093,7 @@ export const useCbtJournal = () => {
         
         const crossesMidnight = wakeTimeMins < bedTimeMins;
         
-        let timeInBedMin = crossesMidnight 
+        const timeInBedMin = crossesMidnight 
             ? (24 * 60 - bedTimeMins) + wakeTimeMins 
             : wakeTimeMins - bedTimeMins;
         
@@ -1054,6 +1149,13 @@ export const useCbtJournal = () => {
         showBackupReminder,
         setCrisisDetected,
         setShowBackupReminder,
+        drafts,
+        saveThoughtFormDraft,
+        clearThoughtFormDraft,
+        saveGratitudeDraft,
+        clearGratitudeDraft,
+        exportEncryptedBackup,
+        markBackupCreated,
         addNewEntry,
         removeEntry,
         clearJournal,
@@ -1100,4 +1202,21 @@ export const useCbtJournal = () => {
         addSleepEntry,
         t,
     };
+};
+
+type JournalContextValue = ReturnType<typeof useCbtJournalState>;
+
+const JournalContext = createContext<JournalContextValue | undefined>(undefined);
+
+export const JournalProvider = ({ children }: { children: React.ReactNode }) => {
+    const value = useCbtJournalState();
+    return React.createElement(JournalContext.Provider, { value }, children);
+};
+
+export const useCbtJournal = () => {
+    const context = useContext(JournalContext);
+    if (!context) {
+        throw new Error('useCbtJournal must be used within JournalProvider');
+    }
+    return context;
 };

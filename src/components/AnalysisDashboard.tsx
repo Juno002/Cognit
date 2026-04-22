@@ -5,7 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Lightbulb, Star, Trophy, Sparkles } from 'lucide-react';
+import { BarChart as BarChartIcon, Brain, PieChart as PieChartIcon, Target, TrendingUp, Zap, LineChart as LineChartIcon, Search, Sparkles } from 'lucide-react';
 import { BarChart, PieChart, LineChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Pie, Cell, Line, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, AreaChart, Area } from 'recharts';
 import type { JournalStats, JournalAnalysis } from '@/hooks/use-cbt-journal';
 import { MIN_SESSIONS_FOR_ANALYSIS } from '@/lib/constants';
@@ -15,6 +15,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
 import { getReflejoState } from '@/lib/reflejo';
 import ReflejoAvatar from '@/components/ReflejoAvatar';
+import { SafeRichText } from '@/components/SafeRichText';
 
 interface AnalysisDashboardProps {
   analysis: JournalAnalysis;
@@ -228,9 +229,8 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
              {patterns && (
                 <ul className="space-y-2">
                   {patterns.length > 0 ? patterns.map((p, i) => (
-                    <li key={i} className={cn("border-l-4 p-3 rounded-r-md text-sm", getPatternClass(p.type))}
-                        dangerouslySetInnerHTML={{ __html: p.text }}
-                    >
+                    <li key={i} className={cn("border-l-4 p-3 rounded-r-md text-sm", getPatternClass(p.type))}>
+                        <SafeRichText text={p.text} />
                     </li>
                   )) : (
                       <li className="border-l-4 border-gray-400 bg-gray-400/10 p-3 rounded-r-md text-sm">{t('no_patterns_detected')}</li>
@@ -248,9 +248,10 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ analysis, stats, 
           </CardHeader>
           <CardContent>
               {analysis.iccFeedback && (
-                  <div className="mb-4 rounded-lg border border-primary bg-primary/10 p-3 text-sm"
-                    dangerouslySetInnerHTML={{ __html: analysis.iccFeedback }}
-                  ></div>
+                  <SafeRichText
+                    text={analysis.iccFeedback}
+                    className="mb-4 rounded-lg border border-primary bg-primary/10 p-3 text-sm"
+                  />
               )}
               {analysis.iccByEmotion.length > 0 ? (
                   <div className="space-y-2 text-sm">

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Confetti from "react-confetti";
 import type { Goal } from "@/types";
-import { cn } from "@/lib/utils";
 
 type GoalFilter = "all" | "in-progress" | "completed" | "overdue";
 

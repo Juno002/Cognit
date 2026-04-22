@@ -47,7 +47,7 @@ export async function decryptVault(pkg: CipherPackage, password: string): Promis
     try {
         const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
         return pt;
-    } catch (err) {
+    } catch (_err) {
         return null;
     }
 }

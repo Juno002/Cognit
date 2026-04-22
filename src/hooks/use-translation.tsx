@@ -41,6 +41,12 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale;
+    }
+  }, [locale]);
+
   const t: TFunction = useCallback((key, options) => {
     const lang = translations[locale] || translations['es'];
     let text = key.split('.').reduce((obj, k) => obj && obj[k], lang);
@@ -60,11 +66,7 @@ export const TranslationProvider = ({ children }: { children: ReactNode }) => {
     return text || key;
   }, [locale]);
 
-  return (
-    <TranslationContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return React.createElement(TranslationContext.Provider, { value: { locale, setLocale, t } }, children);
 };
 
 export const useTranslation = () => {

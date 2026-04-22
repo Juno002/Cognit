@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
+import { SafeRichText } from '@/components/SafeRichText';
 
 interface BackupReminderModalProps {
     isOpen: boolean;
@@ -33,7 +34,9 @@ const BackupReminderModal: React.FC<BackupReminderModalProps> = ({ isOpen, onClo
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-warning text-2xl">{t('backup_reminder_title')}</AlertDialogTitle>
-                    <AlertDialogDescription className="text-base" dangerouslySetInnerHTML={{ __html: t('backup_reminder_desc') }} />
+                    <AlertDialogDescription className="text-base">
+                        <SafeRichText text={t('backup_reminder_desc')} />
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel asChild>

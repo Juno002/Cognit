@@ -2,24 +2,19 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import DailySummary from '@/components/DailySummary';
 import ThoughtForm from '@/components/ThoughtForm';
 import ThoughtList from '@/components/ThoughtList';
 import { useCbtJournal, TourSection } from '@/hooks/use-cbt-journal';
-import type { ThoughtEntryData, ThoughtEntryFormData, Tour, TourStep, ClinicalProfile } from '@/types';
+import type { ThoughtEntryData, ThoughtEntryFormData, Tour, ClinicalProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { AchievementPill } from '@/components/AchievementPill';
-import AnalysisDashboard from '@/components/AnalysisDashboard';
-import ExposureMode from '@/components/ExposureMode';
-import ActivationMode from '@/components/ActivationMode';
-import WellnessMode from '@/components/WellnessMode';
-import { GoalsMode } from '@/components/GoalsMode';
 import CrisisModal from '@/components/modals/CrisisModal';
 import BackupReminderModal from '@/components/modals/BackupReminderModal';
 import { generateReportContent, generateL3ReportContent, generateCsvContent, generateFhirObservation } from '@/lib/export';
 import FilterControls from '@/components/FilterControls';
-import JSZip from 'jszip';
 import type { UseFormReturn } from 'react-hook-form';
 import RuminationModal from '@/components/modals/RuminationModal';
 import { Dialog } from '@/components/ui/dialog';
@@ -27,12 +22,10 @@ import { Loader2, Target, BookText, Zap, HeartPulse, BarChartHorizontalBig, Plus
 import { useTranslation } from '@/hooks/use-translation';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { ClinicalOnboarding } from '@/components/ClinicalOnboarding';
-import PrintReport from '@/components/PrintReport';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getReflejoState } from '@/lib/reflejo';
-import ReflejoAvatar from '@/components/ReflejoAvatar';
 
 
 type ActiveTab = 'cbt-journal' | 'activation' | 'goals' | 'exposure' | 'wellness';
@@ -52,6 +45,20 @@ const NavItem = ({ label, icon: Icon, isActive, onClick, 'data-tour': dataTour }
       </Tooltip>
     </TooltipProvider>
 );
+
+const TabLoading = () => (
+    <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-sm text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        Cargando modulo...
+    </div>
+);
+
+const AnalysisDashboard = dynamic(() => import('@/components/AnalysisDashboard'), { loading: TabLoading, ssr: false });
+const ExposureMode = dynamic(() => import('@/components/ExposureMode'), { loading: TabLoading, ssr: false });
+const ActivationMode = dynamic(() => import('@/components/ActivationMode'), { loading: TabLoading, ssr: false });
+const WellnessMode = dynamic(() => import('@/components/WellnessMode'), { loading: TabLoading, ssr: false });
+const GoalsMode = dynamic(() => import('@/components/GoalsMode').then((mod) => mod.GoalsMode), { loading: TabLoading, ssr: false });
+const PrintReport = dynamic(() => import('@/components/PrintReport'), { ssr: false });
 
 
 export default function Journal() {
@@ -84,23 +91,21 @@ export default function Journal() {
     deleteFearItem,
     addExposureLog,
     activationState,
-    addActivationValue,
-    updateActivationValue,
-    deleteActivationValue,
-    addActivationActivity,
-    updateActivationActivity,
-    deleteActivationActivity,
-    addSubtask,
-    toggleSubtask,
+    goals,
     ruminationState,
     resetRumination,
     tourState,
     showTours,
-    setShowTours,
     completeTour,
     addGratitudeEntry,
     gratitudeEntries,
-    addMeditationEntry,
+    drafts,
+    saveThoughtFormDraft,
+    clearThoughtFormDraft,
+    saveGratitudeDraft,
+    clearGratitudeDraft,
+    exportEncryptedBackup,
+    markBackupCreated,
     sleepEntries,
     addSleepEntry,
     clinicalProfile,
@@ -158,7 +163,7 @@ export default function Journal() {
     } else {
         setActiveTour(null);
     }
-  }, [activeTab, tourState, t]);
+  }, [activeTab, tourState, showTours, t]);
 
 
   const downloadFile = (filename: string, content: string | Blob, mimeType: string) => {
@@ -173,9 +178,26 @@ export default function Journal() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSaveEntry = async (data: ThoughtEntryData) => {
+  const handleSaveEntry = async (data: ThoughtEntryData): Promise<boolean> => {
     try {
         const result = await addNewEntry(data);
+
+        if (result.status === 'crisis_detected') {
+            return false;
+        }
+
+        if (result.status === 'rumination_blocked') {
+            return false;
+        }
+
+        if (result.status === 'validation_error') {
+            toast({
+                title: t('toast_error_saving_title'),
+                description: result.message,
+                variant: "destructive"
+            });
+            return false;
+        }
         
         const reflejo = getReflejoState(stats, analysis, t, { 
             intensity: data.intensity,
@@ -212,22 +234,16 @@ export default function Journal() {
 
         formRef.current?.reset();
         setIsFormOpen(false); // Close modal on success
+        return true;
 
     } catch (error) {
-        if (error instanceof Error && error.message.includes("Crisis risk")) {
-            // The hook already set crisisDetected to true, no toast needed
-            setIsFormOpen(false); // Close form even on crisis
-        } else if (error instanceof Error && error.message.includes("Rumination threshold")) {
-            // This is handled by the rumination modal
-        }
-        else {
-            console.error(error);
-            toast({
-                title: t('toast_error_saving_title'),
-                description: (error as Error).message || t('toast_error_saving_desc'),
-                variant: "destructive"
-            });
-        }
+        console.error(error);
+        toast({
+            title: t('toast_error_saving_title'),
+            description: (error as Error).message || t('toast_error_saving_desc'),
+            variant: "destructive"
+        });
+        return false;
     }
   };
   
@@ -238,7 +254,7 @@ export default function Journal() {
         toast({
             title: t('toast_session_deleted_title'),
         });
-    } catch (error) {
+    } catch (_error) {
          toast({
             title: t('toast_error_deleting_title'),
             variant: "destructive"
@@ -273,14 +289,19 @@ export default function Journal() {
       }
   };
   
-  const handleExportJson = () => {
-      if (stats.total === 0) {
-        toast({ title: t('toast_no_data_to_export_title') });
-        return;
+  const handleExportJson = async () => {
+      try {
+        const dataStr = await exportEncryptedBackup();
+        downloadFile(`Cognit-backup-cifrado-${new Date().toISOString().split('T')[0]}.json`, dataStr, 'application/json');
+        await markBackupCreated();
+        toast({ title: t('toast_export_json_title') });
+      } catch (error) {
+        toast({
+          title: t('toast_no_data_to_export_title'),
+          description: (error as Error).message,
+          variant: 'destructive',
+        });
       }
-      const dataStr = JSON.stringify({cbtEntries: entries, exposureState: exposureState}, null, 2);
-      downloadFile(`CBT-backup-${new Date().toISOString().split('T')[0]}.json`, dataStr, 'application/json');
-      toast({ title: t('toast_export_json_title') });
   };
   
   const handleExportCsv = async () => {
@@ -321,7 +342,16 @@ export default function Journal() {
       const safeExposureState = exposureState || { fearLadder: [], logs: [] };
       const safeActivationState = activationState || { values: [], activities: [] };
 
-      if (stats.total === 0 && safeExposureState.fearLadder.length === 0 && safeExposureState.logs.length === 0) {
+      const hasBackupableData = stats.total > 0 ||
+          safeExposureState.fearLadder.length > 0 ||
+          safeExposureState.logs.length > 0 ||
+          safeActivationState.values.length > 0 ||
+          safeActivationState.activities.length > 0 ||
+          goals.length > 0 ||
+          gratitudeEntries.length > 0 ||
+          sleepEntries.length > 0;
+
+      if (!hasBackupableData) {
           toast({ title: t('toast_no_sessions_for_zip_title') });
           return;
       }
@@ -330,18 +360,21 @@ export default function Journal() {
       toast({ title: t('toast_creating_zip_title') });
 
       try {
+        const { default: JSZip } = await import('jszip');
         const zip = new JSZip();
         const today = new Date().toISOString().split('T')[0];
-        
-        const fullBackup = {
-            cbtEntries: safeEntries,
-            exposureState: safeExposureState,
-            activationState: safeActivationState
-        };
 
-        // 1. Full JSON Backup
-        const jsonContent = JSON.stringify(fullBackup, null, 2);
-        zip.file(`CBT-data-completo-${today}.json`, jsonContent);
+        // 1. Encrypted full backup
+        const jsonContent = await exportEncryptedBackup();
+        zip.file(`Cognit-backup-cifrado-${today}.json`, jsonContent);
+        zip.file(
+          `LEEME-PRIVACIDAD-${today}.txt`,
+          [
+            'Este ZIP contiene un backup JSON cifrado de la boveda completa.',
+            'Los reportes Markdown, CSV y FHIR incluidos para lectura humana no estan cifrados.',
+            'Tratalos como archivos sensibles si decides compartirlos o almacenarlos fuera de tu dispositivo.'
+          ].join('\n')
+        );
 
         // 2. Report MD
         if (safeEntries.length > 0) {
@@ -366,7 +399,7 @@ export default function Journal() {
         const zipBlob = await zip.generateAsync({ type: "blob" });
         downloadFile(`CBT-Respaldo-${today}.zip`, zipBlob, 'application/zip');
         
-        localStorage.setItem('lastBackupDate', new Date().toISOString());
+        await markBackupCreated();
         setShowBackupReminder(false);
         toast({ title: t('toast_zip_downloaded_title') });
       } catch (error) {
@@ -470,7 +503,9 @@ export default function Journal() {
             return <WellnessMode 
                         gratitudeEntries={gratitudeEntries}
                         onAddGratitude={addGratitudeEntry}
-                        onAddMeditation={addMeditationEntry}
+                        gratitudeDraft={drafts.gratitude}
+                        onSaveGratitudeDraft={saveGratitudeDraft}
+                        onClearGratitudeDraft={clearGratitudeDraft}
                         onOpenJournal={setIsFormOpen}
                         sleepEntries={sleepEntries}
                         onAddSleepEntry={addSleepEntry}
@@ -538,9 +573,13 @@ export default function Journal() {
           onSubmit={handleSaveEntry} 
           stats={stats} 
           formRef={formRef} 
-          onOpenChange={setIsFormOpen}
           onNavigateToAction={() => handleNavigate('activation', { action: 'openActivityForm', payload: { name: formRef.current?.getValues('note') } })}
           clinicalProfile={clinicalProfile}
+          isSaving={isSaving}
+          goals={goals}
+          thoughtFormDraft={drafts.thoughtForm}
+          onSaveDraft={saveThoughtFormDraft}
+          onClearDraft={clearThoughtFormDraft}
         />
       </Dialog>
       
@@ -550,6 +589,7 @@ export default function Journal() {
             onClick={() => setIsFormOpen(true)}
             className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-30"
             data-tour="new-entry-button"
+            aria-label={t('form_title')}
         >
             <Plus className="h-8 w-8" />
         </Button>

@@ -52,8 +52,8 @@ Cognit λ is an **interactive cognitive coach** that teaches you to identify and
 - **Real-time feedback** on thought distortions
 - **Objective metrics** (ICC, SUDS) to track cognitive change
 - **Behavioral interventions** (anti-rumination pauses, breathing exercises)
-- **100% privacy** (client-side encryption, zero cloud storage, zero analytics)
-- **Offline-first** (works on planes, basements, anywhere)
+- **Local-first privacy** (client-side encryption, zero cloud storage, zero analytics)
+- **Offline-first after first load** (the installed PWA can keep working without internet once the shell has been cached)
 
 ---
 
@@ -73,7 +73,7 @@ Cognit λ is an **interactive cognitive coach** that teaches you to identify and
 | **Crisis Plan** | Personal safety contacts + coping phrases, activated when high-risk language is detected |
 | **Lambda λ** | Tu \"Eco Cognitivo\": un avatar que reacciona a tu estado emocional y guía las intervenciones clínicas. |
 | **Auto-Lock** | Automatically locks the journal after a period of inactivity to protect from prying eyes. |
-| **Offline Support** | Full PWA with Service Workers—works without internet |
+| **Offline Support** | PWA with a first-load cache strategy: once opened online, the app shell can load offline. |
 
 ---
 
@@ -100,7 +100,7 @@ Cognit λ is an **interactive cognitive coach** that teaches you to identify and
 1. Visit **[your-domain.com](https://your-domain.com)** *(replace with actual URL)*
 2. Click the **"Install"** prompt in your browser
 3. Launch from your home screen
-4. That's it! Works 100% offline.
+4. That's it. After the first successful online load, the installed app can continue opening offline from the cached shell.
 
 **Supported Platforms:**
 - ✅ Chrome/Edge (Desktop + Android)
@@ -140,9 +140,9 @@ npm start
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/[your-username]/cognit-lambda)
 
 **Other Hosting Options:**
-- Netlify (drag & drop `out/` folder)
-- GitHub Pages (static export)
-- Self-hosted VPS (nginx + PM2)
+- Any Node-compatible host that can run `npm run build` + `npm start`
+- Self-hosted VPS (nginx reverse proxy + PM2 or another process manager)
+- Static hosts only if the project is intentionally converted to `output: "export"`
 
 ---
 
@@ -213,11 +213,12 @@ When ready for deeper work:
 
 ### **Step 4: Weekly Export (Data Ownership)**
 1. Click **⚡ Auto-ZIP**
-2. Downloads 4 files:
-   - `CBT-data-[date].json` (full, **encrypted** backup for re-import)
-   - `CBT-report-[date].md` (Markdown summary for therapist)
-   - `CBT-data-raw-[date].csv` (raw data for analysis)
-   - `README-[date].txt` (instructions)
+2. Downloads a ZIP with:
+   - `Cognit-backup-cifrado-[date].json` (full **encrypted** backup for re-import)
+   - Markdown/CSV/FHIR reports for portability and clinician discussion
+   - `LEEME-PRIVACIDAD-[date].txt` with explicit plaintext warnings
+
+**Important:** the encrypted JSON backup is safe to store as a backup artifact. Markdown, CSV and FHIR exports are human-readable plaintext by design; treat them like sensitive medical notes.
 
 **Store these in:**
 - Local encrypted folder (VeraCrypt, BitLocker)
@@ -230,13 +231,13 @@ When ready for deeper work:
 
 | Layer | Technology | Why? |
 |-------|-----------|------|
-| **Framework** | Next.js 14 (App Router) | SEO, performance, great DX |
+| **Framework** | Next.js 15 (App Router) | Performance, modern React patterns, great DX |
 | **Language** | TypeScript | Type safety for complex therapy logic |
 | **UI Components** | ShadCN UI (Radix + Tailwind) | Accessible, customizable, modern |
 | **Client-Side Encryption** | Web Crypto API (AES-GCM + PBKDF2) | Strong, browser-native encryption for data at rest. |
 | **Data Visualization** | Recharts | Responsive charts for ICC/SUDS tracking |
 | **Local Storage** | IndexedDB (Encrypted Blob) | Handles 100s of MB, survives restarts |
-| **PWA** | Workbox + Service Workers | Offline-first, installable |
+| **PWA** | Native Service Worker | Offline-first shell caching, installable |
 | **Icons** | Lucide React | Lightweight, consistent design |
 | **Analytics** | **None** | Zero tracking = maximum privacy |
 | **Backend** | **None** | No servers = no data breaches |
@@ -255,7 +256,7 @@ Cognit λ:
 ✅ No accounts (anonymous by design)
 ✅ Data is ENCRYPTED and stays in YOUR browser
 ✅ Zero external requests (no tracking)
-✅ Works 100% offline (PWA)
+✅ Keeps working offline after the first successful cached load (PWA)
 ✅ MIT licensed (free forever)
 ```
 
@@ -303,9 +304,9 @@ graph TD
 - ❌ **No analytics** (not even privacy-friendly ones like Plausible)
 - ❌ **No cloud storage** (data never leaves your device unless you manually export it)
 - ❌ **No user accounts** (no email, OAuth—nothing)
-- ❌ **No cookies** (except PWA service worker cache)
+- ❌ **No app cookies** (the browser may keep normal PWA/HTTP cache entries)
 - ❌ **No third-party scripts** (no CDN dependencies, no external fonts)
-- ❌ **No unencrypted data at rest**.
+- ❌ **No clinical journal content stored in plaintext by the app**. Non-clinical metadata such as locale and lockout timing may remain outside the encrypted vault.
 
 ### **What We DO:**
 - ✅ **Client-Side Encryption (AES-GCM):** All your journal data is encrypted with a key derived from your password (using PBKDF2). The encrypted data is stored in IndexedDB.
@@ -313,6 +314,8 @@ graph TD
 - ✅ **Auto-Lock:** The app automatically locks after a few minutes of inactivity, requiring your password again to access the data.
 - ✅ **Full Export Control:** You decide when/where to backup your **encrypted** data.
 - ✅ **Open source:** Audit the code yourself.
+
+**Plaintext export boundary:** Markdown, CSV and FHIR exports are intentionally readable so you can review or share them. They are not encrypted once downloaded.
 
 ### **HIPAA/GDPR Compliance:**
 
@@ -332,6 +335,10 @@ If you self-host this for a **therapeutic practice**, consult legal counsel abou
 - Record-keeping regulations in your jurisdiction
 
 **This app is designed for personal use, not as a clinical record system.**
+
+### **FHIR Export Boundary**
+
+FHIR export is provided for portability and clinician discussion. Cognit uses a local self-report code system and avoids pretending that journal summaries are diagnostic observations. High-distress interpretation flags are descriptive only and must not be treated as triage, diagnosis, or medical-device output.
 
 ---
 

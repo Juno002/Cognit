@@ -28,7 +28,7 @@ interface ThoughtListProps {
 }
 
 const EntryCard: React.FC<{ entry: ThoughtEntry; onDelete: (id: string) => void; onMoveToL3: (data: Partial<ThoughtEntryFormData>) => void; allEntries: ThoughtEntry[]; }> = ({ entry, onDelete, onMoveToL3, allEntries }) => {
-    const { t, locale } = useTranslation();
+    const { t } = useTranslation();
     const { goals, clinicalProfile } = useCbtJournal();
     const levelEmoji = entry.level === 1 ? '💙' : entry.level === 2 ? '💜' : '💛';
     const iccScore = calculateICC(entry.originalIntensity, entry.finalCredibility);

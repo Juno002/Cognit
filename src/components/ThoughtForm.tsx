@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo, useImperativeHandle, Ref } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo, useImperativeHandle, Ref, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,13 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { BookPlus, X, Volume2, Mic, Link as LinkIcon, HelpCircle, Target, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
-import type { ThoughtEntryData, ThoughtEntryFormData, CognitiveDistortion, ClinicalProfile } from '@/types';
+import type { ThoughtEntryData, CognitiveDistortion, ClinicalProfile, Goal } from '@/types';
 import { todayISO } from '@/lib/utils';
 import { MIN_L3_RESPONSE_LENGTH } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { detectCognitiveDistortions } from '@/lib/distortions';
-import { useCbtJournal } from '@/hooks/use-cbt-journal';
 import type { JournalStats } from '@/hooks/use-cbt-journal';
+import type { ThoughtFormDraft } from '@/context/vault/VaultProvider';
 import { getContextualPrompt } from '@/lib/prompts';
 import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -88,12 +88,16 @@ type FormValues = z.infer<typeof formSchema>;
 
 
 interface ThoughtFormProps {
-  onSubmit: (data: ThoughtEntryData) => void;
+  onSubmit: (data: ThoughtEntryData) => Promise<boolean> | boolean;
   stats: JournalStats;
   formRef: Ref<UseFormReturn<FormValues>>;
-  onOpenChange: (open: boolean) => void;
   onNavigateToAction: () => void;
   clinicalProfile?: ClinicalProfile;
+  isSaving: boolean;
+  goals: Goal[];
+  thoughtFormDraft?: ThoughtFormDraft;
+  onSaveDraft: (draft: ThoughtFormDraft) => Promise<void> | void;
+  onClearDraft: () => Promise<void> | void;
 }
 
 type TextareaFieldNames = "note" | "situation" | "automaticThought" | "alternativeResponse" | "friendResponse" | "evidenceFor" | "evidenceAgainst";
@@ -124,9 +128,8 @@ const SpeechButton: React.FC<{ field: TextareaFieldNames, form: UseFormReturn<Fo
 };
 
 
-const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onOpenChange, onNavigateToAction, clinicalProfile }) => {
-  const { isSaving, goals } = useCbtJournal();
-  const { t } = useTranslation();
+const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onNavigateToAction, clinicalProfile, isSaving, goals, thoughtFormDraft, onSaveDraft, onClearDraft }) => {
+  const { t, locale } = useTranslation();
   const [level, setLevel] = useState(1);
   const [prompt, setPrompt] = useState('');
   const [tagInput, setTagInput] = useState('');
@@ -164,28 +167,38 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
   useImperativeHandle(formRef, () => form);
 
   // Persistence
+  const loadDraft = useCallback(() => thoughtFormDraft?.form as FormValues | undefined, [thoughtFormDraft]);
+  const saveDraft = useCallback((data: FormValues) => onSaveDraft({ form: data }), [onSaveDraft]);
   const { clearDraft } = useFormPersistence({
     form,
     namespace: 'thought-form',
+    loadDraft,
+    saveDraft,
+    clearDraft: onClearDraft,
   });
 
-  // Persist internal state not handled by react-hook-form
+  // Persist internal state not handled by react-hook-form inside the encrypted vault.
+  const recoveredInternalDraft = useRef(false);
   useEffect(() => {
-    const saved = sessionStorage.getItem('thought-form-internal');
-    if (saved) {
-      try {
-        const { arrowChain: savedChain, isArrowComplete: savedComplete } = JSON.parse(saved);
-        if (savedChain) setArrowChain(savedChain);
-        if (savedComplete !== undefined) setIsArrowComplete(savedComplete);
-      } catch (e) {
-        console.warn("Failed to recover internal thought form state", e);
-      }
+    if (recoveredInternalDraft.current) return;
+
+    const internal = thoughtFormDraft?.internal;
+    if (internal) {
+      if (Array.isArray(internal.arrowChain)) setArrowChain(internal.arrowChain);
+      if (internal.isArrowComplete !== undefined) setIsArrowComplete(internal.isArrowComplete);
     }
-  }, []);
+    recoveredInternalDraft.current = true;
+  }, [thoughtFormDraft]);
 
   useEffect(() => {
-    sessionStorage.setItem('thought-form-internal', JSON.stringify({ arrowChain, isArrowComplete }));
-  }, [arrowChain, isArrowComplete]);
+    if (!recoveredInternalDraft.current) return;
+
+    const timer = setTimeout(() => {
+      void onSaveDraft({ internal: { arrowChain, isArrowComplete } });
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [arrowChain, isArrowComplete, onSaveDraft]);
 
   const watchedLevel = form.watch('level');
   const watchedEmotion = form.watch('emotion');
@@ -198,6 +211,22 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
         "transition-all duration-300",
         fieldValue && fieldValue.length > 10 ? 'border-success' : 'border-input'
     );
+
+  const handleFormSubmit = useCallback(async (values: FormValues) => {
+    const entryData: ThoughtEntryData = {
+        ...values,
+        situation: values.situation || '',
+        automaticThought: values.automaticThought || '',
+        alternativeResponse: values.alternativeResponse || '',
+        creativeLink: values.creativeLink || '',
+        promptUsed: prompt,
+        __draft: false,
+    };
+    const saved = await onSubmit(entryData);
+    if (saved) {
+      clearDraft();
+    }
+  }, [clearDraft, onSubmit, prompt]);
   
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -210,13 +239,13 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [form]);
+  }, [form, handleFormSubmit]);
 
 
   useEffect(() => {
     const newPrompt = getContextualPrompt(watchedLevel, stats, t, clinicalProfile);
     setPrompt(newPrompt);
-  }, [watchedLevel, stats, t]);
+  }, [watchedLevel, stats, t, clinicalProfile]);
   
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -230,22 +259,6 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
     return () => subscription.unsubscribe();
   }, [form, level]);
 
-  const handleFormSubmit = (values: FormValues) => {
-    
-    const entryData: ThoughtEntryData = {
-        ...values,
-        situation: values.situation || '',
-        automaticThought: values.automaticThought || '',
-        alternativeResponse: values.alternativeResponse || '',
-        creativeLink: values.creativeLink || '',
-        promptUsed: prompt,
-        __draft: false,
-    };
-    clearDraft();
-    sessionStorage.removeItem('thought-form-internal');
-    onSubmit(entryData);
-  };
-  
   const addTag = () => {
     const newTag = tagInput.trim().toLowerCase();
     if (newTag && !form.getValues('tags').includes(newTag)) {
@@ -266,7 +279,7 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
       return;
     }
     const utterance = new SpeechSynthesisUtterance(prompt);
-    utterance.lang = 'es-ES';
+    utterance.lang = locale === 'en' ? 'en-US' : 'es-ES';
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
@@ -311,7 +324,7 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onO
     } else {
         setDetectedDistortions([]);
     }
-  }, [watchAutoThought, t]);
+  }, [watchAutoThought, t, clinicalProfile]);
 
   return (
     <DialogContent className="max-h-screen overflow-y-scroll">

@@ -1,10 +1,15 @@
 
 "use client";
 
+let registrationStarted = false;
+
 export function registerServiceWorker() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     return;
   }
+
+  if (registrationStarted) return;
+  registrationStarted = true;
 
   const register = async () => {
     try {
@@ -17,5 +22,9 @@ export function registerServiceWorker() {
     }
   };
 
-  window.addEventListener('load', register);
+  if (document.readyState === 'complete') {
+    void register();
+  } else {
+    window.addEventListener('load', register, { once: true });
+  }
 }

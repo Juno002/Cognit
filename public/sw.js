@@ -1,5 +1,5 @@
 // public/sw.js
-const CACHE_NAME = 'cognit-lambda-cache-v1.3'; // Incremented version
+const CACHE_NAME = 'cognit-lambda-cache-v1.4';
 const urlsToCache = [
   '/',
   '/offline',
@@ -56,23 +56,32 @@ self.addEventListener('activate', event => {
 
 // Serve cached content when offline
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   // Always try network first for navigation requests, fallback to cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .catch(() => caches.match('/offline'))
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put('/', responseClone));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then(response => response || caches.match('/')).then(response => response || caches.match('/offline')))
     );
     return;
   }
   
-  // For other requests (assets), use cache-first strategy
+  // For same-origin assets, use cache-first and populate cache after first online load.
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         return response || fetch(event.request).then(fetchResponse => {
             return caches.open(CACHE_NAME).then(cache => {
-                // Do not cache everything, only known assets or specific types
-                if (urlsToCache.includes(new URL(event.request.url).pathname)) {
+                const requestUrl = new URL(event.request.url);
+                if (requestUrl.origin === self.location.origin && fetchResponse.ok) {
                     cache.put(event.request, fetchResponse.clone());
                 }
                 return fetchResponse;

@@ -20,8 +20,3 @@ export async function loadVault(): Promise<CipherPackage | null> {
 export async function wipeVault(): Promise<void> {
   return await localforage.removeItem(VAULT_KEY);
 }
-
-// Guarda el vault sin cifrar, usado solo durante la importación QR
-export async function saveRawVault(data: ArrayBuffer): Promise<ArrayBuffer> {
-    return await localforage.setItem(VAULT_KEY, data);
-}

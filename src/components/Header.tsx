@@ -2,35 +2,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sun, Moon, HelpCircle, Download, Upload, Trash2, Settings, FileText, FileJson, FileSpreadsheet, Zap, CheckCircle, AlertCircle, HeartPulse, Printer, MoreVertical, BarChart2 } from 'lucide-react';
+import { HelpCircle, Settings, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuGroup,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import HelpModal from '@/components/modals/HelpModal';
 import SettingsModal from '@/components/modals/SettingsModal';
-import { useCbtJournal } from '@/hooks/use-cbt-journal';
 import type { CrisisConfig } from '@/types';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -54,19 +31,10 @@ interface HeaderProps {
     onNavigate: (tab: 'analysis') => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, onPrintReport, isZipping, crisisConfig, updateCrisisConfig, lastPrompt, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ dbStatus: _dbStatus, isSaving, onReset, onImport, onExportJson, onExportCsv, onExportReport, onExportL3Report, onAutoZip, onExportFhir, onPrintReport, isZipping, crisisConfig, updateCrisisConfig, lastPrompt, onNavigate }) => {
   const { t } = useTranslation();
-  const { theme, setTheme } = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-
-  React.useEffect(() => setIsMounted(true), []);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   const importInputRef = React.useRef<HTMLInputElement>(null);
 

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Bed, BarChart, History, Star, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Bed, BarChart, History, Star } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 import { todayISO, formatDate } from '@/lib/utils';
 import {
