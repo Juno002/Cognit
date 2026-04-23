@@ -1213,10 +1213,12 @@ export const JournalProvider = ({ children }: { children: React.ReactNode }) => 
     return React.createElement(JournalContext.Provider, { value }, children);
 };
 
-export const useCbtJournal = () => {
+export const useJournal = () => {
     const context = useContext(JournalContext);
     if (!context) {
-        throw new Error('useCbtJournal must be used within JournalProvider');
+        throw new Error('useJournal must be used within JournalProvider');
     }
     return context;
 };
+
+export const useCbtJournal = useJournal;

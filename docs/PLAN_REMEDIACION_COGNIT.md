@@ -51,7 +51,7 @@ Estado auditado contra el codigo actual:
 | Backup JSON cifrado | Hecho | `src/lib/backup.ts` genera sobre `cognit-backup` v2 con `payloadBase64` y `sha256Base64`. |
 | Importacion | Hecho | Se aceptan backups cifrados v2 y JSON legado; ambos reemplazan la boveda normalizada, no hacen merge implicito. |
 | Cambio de contrasena y lockout | Hecho | `changePassword` verifica la contrasena actual; el lockout persiste solo metadatos no clinicos en `localStorage`. |
-| Estado unico | Hecho con API existente | `JournalProvider` esta montado bajo `VaultProvider`. La API publica sigue siendo `useCbtJournal()`; no se creo `useJournal()`. |
+| Estado unico | Hecho | `JournalProvider` esta montado bajo `VaultProvider`. `useJournal()` es la API canonica y `useCbtJournal()` queda como alias compatible. |
 | `addNewEntry` | Hecho | Devuelve union discriminada y conserva el formulario cuando hay crisis, rumiacion o error de validacion. |
 | HTML crudo | Hecho en superficies clinicas | No queda `dangerouslySetInnerHTML` en analisis, alertas ni modales. El uso restante esta en `src/components/ui/chart.tsx` para inyectar variables CSS controladas del componente de graficos. |
 | Analitica | Hecho | `compareLastDays` usa ventanas equivalentes; `analyzeNegativeStreak` y ordenaciones auditadas trabajan sobre copias. |
@@ -75,7 +75,6 @@ Pendientes reales no bloqueantes:
 
 - Validacion manual en navegador de que `localStorage`/`sessionStorage` no contienen contenido clinico despues de escribir drafts reales.
 - Validacion manual offline despues de una primera carga online exitosa en el navegador objetivo.
-- Decidir si vale la pena introducir el alias `useJournal()`. Hoy no es necesario para el producto; `useCbtJournal()` ya consume el contexto unico.
 - Post-lanzamiento: investigar sincronizacion opcional cifrada E2E entre dispositivos.
 
 ## Objetivos
@@ -169,8 +168,8 @@ Formato objetivo:
 - Extraer la logica de `use-cbt-journal` a un `JournalProvider`.
 - Montarlo una sola vez debajo de `VaultProvider`.
 - Hacer que todos los consumidores lean del mismo contexto.
-- Mantener `useCbtJournal()` como API publica real, ahora respaldada por contexto compartido.
-- Dejar `useJournal()` como posible alias futuro, no como requisito del pase.
+- Exponer `useJournal()` como API publica canonica.
+- Mantener `useCbtJournal()` como alias compatible durante la migracion interna.
 
 ### 2.2 Rehacer el contrato de `addNewEntry`
 
@@ -298,11 +297,12 @@ type VaultData = {
 };
 ```
 
-### `useCbtJournal`
+### `useJournal` / `useCbtJournal`
 
 - Dejo de ser hook con estado autonomo.
 - Ahora consume contexto compartido mediante `JournalProvider`.
-- La API publica real sigue siendo `useCbtJournal()`. El alias `useJournal()` fue una idea de migracion, pero no se implemento porque no aporta valor funcional inmediato.
+- `useJournal()` es la API canonica.
+- `useCbtJournal()` se mantiene como alias compatible para evitar una migracion masiva de consumidores en el mismo pase.
 
 ### `addNewEntry`
 
