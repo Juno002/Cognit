@@ -1,12 +1,13 @@
 # Plan de Remediacion Integral de Cognit
 
 Fecha: 2026-04-18
+Ultima auditoria: 2026-04-22
 
 ## Resumen
 
-Este plan corrige primero la frontera de confianza del producto y luego estabiliza la arquitectura para que la app vuelva a cumplir su promesa principal: datos sensibles cifrados, estado consistente, validaciones confiables y experiencia offline razonable.
+Este documento queda como registro de remediacion y auditoria de cierre. El pase corrigio primero la frontera de confianza del producto y luego estabilizo la arquitectura para que la app vuelva a cumplir su promesa principal: datos sensibles cifrados, estado consistente, validaciones confiables y experiencia offline razonable.
 
-La implementacion se ejecutara en este orden:
+La implementacion se diseño en este orden:
 
 1. Seguridad de datos.
 2. Store unico y flujos.
@@ -38,6 +39,44 @@ Validaciones automatizadas esperadas como criterio de cierre:
 - `npm run typecheck`
 - `npm test -- --run`
 - `npm run build`
+
+## Auditoria de estado 2026-04-22
+
+Estado auditado contra el codigo actual:
+
+| Area | Estado real | Evidencia |
+| --- | --- | --- |
+| Boveda versionada | Hecho | `src/context/vault/schema.ts` define `CURRENT_VAULT_SCHEMA_VERSION = 2` y normaliza datos legados. |
+| Drafts sensibles | Hecho | `drafts.thoughtForm` y `drafts.gratitude` viven en `VaultData`; `use-form-persistence` no tiene fallback a `localStorage` ni `sessionStorage`. |
+| Backup JSON cifrado | Hecho | `src/lib/backup.ts` genera sobre `cognit-backup` v2 con `payloadBase64` y `sha256Base64`. |
+| Importacion | Hecho | Se aceptan backups cifrados v2 y JSON legado; ambos reemplazan la boveda normalizada, no hacen merge implicito. |
+| Cambio de contrasena y lockout | Hecho | `changePassword` verifica la contrasena actual; el lockout persiste solo metadatos no clinicos en `localStorage`. |
+| Estado unico | Hecho con API existente | `JournalProvider` esta montado bajo `VaultProvider`. La API publica sigue siendo `useCbtJournal()`; no se creo `useJournal()`. |
+| `addNewEntry` | Hecho | Devuelve union discriminada y conserva el formulario cuando hay crisis, rumiacion o error de validacion. |
+| HTML crudo | Hecho en superficies clinicas | No queda `dangerouslySetInnerHTML` en analisis, alertas ni modales. El uso restante esta en `src/components/ui/chart.tsx` para inyectar variables CSS controladas del componente de graficos. |
+| Analitica | Hecho | `compareLastDays` usa ventanas equivalentes; `analyzeNegativeStreak` y ordenaciones auditadas trabajan sobre copias. |
+| I18n y accesibilidad | Hecho en el alcance revisado | `document.documentElement.lang` sigue el locale, voz/reconocimiento usan `es-ES` y `en-US`, y controles clave tienen labels/aria-labels. |
+| Recordatorio diario | Hecho | No hay UI funcional de recordatorio diario en ajustes. |
+| PWA/offline | Hecho por codigo | Registro idempotente desde `useEffect`; navegacion offline intenta cachear `/` tras carga online y usa `/offline` como fallback. |
+| Bundle inicial | Hecho | `layout.tsx` es server component, providers viven en `app/providers.tsx`, tabs pesadas y `JSZip` cargan dinamicamente. |
+| Guardrails | Hecho y validado | `eslint.config.mjs`, `tsconfig.typecheck.json`, Vitest y build estan activos sin ignores de Next. |
+| FHIR | Hecho | Exporta resumen de auto-reporte con sistema local, sin LOINC ficticio ni interpretacion "Normal" automatica. |
+| Tooling muerto | Hecho | `package.json` ya no incluye Genkit, Capacitor ni parsers PDF de uso unico. |
+
+Validaciones ejecutadas el 2026-04-22:
+
+- `npm audit`: 0 vulnerabilidades.
+- `npm run lint`: OK.
+- `npm run typecheck`: OK.
+- `npm test -- --run`: 5 archivos, 12 tests OK.
+- `npm run build`: OK.
+
+Pendientes reales no bloqueantes:
+
+- Validacion manual en navegador de que `localStorage`/`sessionStorage` no contienen contenido clinico despues de escribir drafts reales.
+- Validacion manual offline despues de una primera carga online exitosa en el navegador objetivo.
+- Decidir si vale la pena introducir el alias `useJournal()`. Hoy no es necesario para el producto; `useCbtJournal()` ya consume el contexto unico.
+- Post-lanzamiento: investigar sincronizacion opcional cifrada E2E entre dispositivos.
 
 ## Objetivos
 
@@ -130,8 +169,8 @@ Formato objetivo:
 - Extraer la logica de `use-cbt-journal` a un `JournalProvider`.
 - Montarlo una sola vez debajo de `VaultProvider`.
 - Hacer que todos los consumidores lean del mismo contexto.
-- Exponer `useJournal()` como API principal.
-- Mantener `useCbtJournal()` como alias fino durante la migracion interna.
+- Mantener `useCbtJournal()` como API publica real, ahora respaldada por contexto compartido.
+- Dejar `useJournal()` como posible alias futuro, no como requisito del pase.
 
 ### 2.2 Rehacer el contrato de `addNewEntry`
 
@@ -261,9 +300,9 @@ type VaultData = {
 
 ### `useCbtJournal`
 
-- Deja de ser hook con estado autonomo.
-- Pasa a consumir contexto compartido.
-- `useJournal()` sera la API principal.
+- Dejo de ser hook con estado autonomo.
+- Ahora consume contexto compartido mediante `JournalProvider`.
+- La API publica real sigue siendo `useCbtJournal()`. El alias `useJournal()` fue una idea de migracion, pero no se implemento porque no aporta valor funcional inmediato.
 
 ### `addNewEntry`
 
@@ -320,29 +359,23 @@ type VaultData = {
 - `npm run build` debe pasar.
 - Validacion manual offline despues de una primera carga online exitosa.
 
-## Orden sugerido de ejecucion en la proxima sesion
+## Siguientes pasos reales
 
-1. Estabilizar la seguridad base:
-   - schema v2;
-   - drafts cifrados;
-   - cambio de contrasena;
-   - lockout persistente.
-2. Introducir `JournalProvider` y migrar consumidores.
-3. Rehacer `addNewEntry` y corregir el flujo de crisis.
-4. Corregir import/export para reemplazo total y backup cifrado.
-5. Arreglar analitica, `dangerouslySetInnerHTML`, i18n y accesibilidad.
-6. Reducir bundle inicial y corregir PWA/offline.
-7. Reactivar lint, typecheck y tests.
-8. Actualizar README y copy final.
+No queda una fase de implementacion bloqueante dentro de este plan. Las siguientes acciones recomendadas son de cierre operativo:
+
+1. Hacer prueba manual de privacidad en DevTools con drafts reales y boveda desbloqueada/bloqueada.
+2. Hacer prueba manual PWA/offline despues de una primera carga online exitosa.
+3. Mantener `npm audit`, `npm run lint`, `npm run typecheck`, `npm test -- --run` y `npm run build` como checklist antes de publicar.
+4. Tratar la sincronizacion cifrada E2E como iniciativa post-lanzamiento separada.
 
 ## Criterio de cierre de este plan
 
-Se considerara completado cuando:
+Se considera completado tecnicamente al 2026-04-22 porque:
 
 - no exista persistencia sensible en texto plano fuera de la boveda;
 - exista una sola fuente de verdad para el estado clinico;
 - crisis flow, import/export y analitica sean confiables;
-- el proyecto pase `lint`, `typecheck`, `test` y `build`;
+- el proyecto pase `audit`, `lint`, `typecheck`, `test` y `build`;
 - la documentacion ya no prometa comportamientos que el producto no cumple.
 
 ## Suposiciones

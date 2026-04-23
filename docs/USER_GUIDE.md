@@ -54,7 +54,9 @@ Si detectamos lenguaje de alto riesgo o una intensidad emocional máxima (9-10),
 ## 6. Privacidad y Datos (Tu Bóveda)
 Tus datos **nunca salen de tu dispositivo** de forma automática. 
 - **Cifrado**: Todo se guarda cifrado con la contraseña que elegiste.
-- **Exportación (Auto-ZIP)**: Te recomendamos exportar tus datos semanalmente. Esto genera un archivo `.json` (para re-importar) y un `.md` (un reporte en texto limpio que puedes compartir con tu terapeuta si así lo deseas).
+- **Backup JSON cifrado**: El archivo `Cognit-backup-cifrado-[fecha].json` contiene la bóveda completa cifrada y sirve para re-importar tus datos. Guárdalo con la misma seriedad que una copia de seguridad personal.
+- **Exportación (Auto-ZIP)**: Te recomendamos exportar tus datos semanalmente. El ZIP incluye el backup JSON cifrado y reportes legibles por humanos en Markdown/CSV/FHIR. Esos reportes **no están cifrados**; compártelos o almacénalos solo donde te sientas cómodo guardando notas sensibles.
+- **Importación**: Cognit puede importar el backup cifrado actual y también JSON legados en texto plano. Los JSON legados se migran y se vuelven a guardar dentro de la bóveda cifrada.
 
 ---
 

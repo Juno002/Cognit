@@ -417,10 +417,26 @@ A: Yes! Use **Markdown Export** to generate a clean, unencrypted report. Many th
 A: PWAs work on all platforms without app store approval or separate codebases. You can "install" this on any device and it behaves like a native app. With client-side encryption, we can achieve a high level of security without needing a native build.
 
 **Q: Can I self-host this for my clinic?**  
-A: Yes! It's MIT licensed. See [SELF_HOSTING.md](./docs/SELF_HOSTING.md). Consult legal counsel for clinical compliance.
+A: Yes. It's MIT licensed and can be deployed with the self-hosting steps above. Consult legal counsel for clinical compliance before using it in a therapeutic practice.
 
 **Q. Does the auto-lock feature protect me if I leave my computer unlocked?**
 A. Yes. After a few minutes of inactivity, the app will lock itself, requiring your password again. This protects your data from someone accessing your device while it's unlocked and unattended.
+
+---
+
+## ✅ Current Engineering Status
+
+The remediation pass has been audited against the current codebase. The app now has an encrypted vault schema v2, encrypted form drafts, encrypted JSON backup envelopes with SHA-256 integrity checks, full-vault import replacement, a shared `JournalProvider`, guarded crisis/rumination save flows, active lint/typecheck/test/build guardrails, and defensive FHIR self-report export semantics.
+
+Validated locally on 2026-04-22:
+
+- `npm audit`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run`
+- `npm run build`
+
+Remaining checks are manual release checks, not code blockers: inspect browser storage with real drafts and verify PWA offline behavior after a first successful online load. See [`docs/PLAN_REMEDIACION_COGNIT.md`](./docs/PLAN_REMEDIACION_COGNIT.md) for the detailed audit table.
 
 ---
 
