@@ -138,6 +138,7 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onN
   const [arrowInput, setArrowInput] = useState('');
   const [isArrowComplete, setIsArrowComplete] = useState(false);
   const [detectedDistortions, setDetectedDistortions] = useState<CognitiveDistortion[]>([]);
+  const promptsCache = useRef<Record<number, string>>({});
   
   const EMOTIONS: {emoji: string, label: string}[] = useMemo(() => t('emotions'), [t]);
 
@@ -243,7 +244,12 @@ const ThoughtForm: React.FC<ThoughtFormProps> = ({ onSubmit, stats, formRef, onN
 
 
   useEffect(() => {
+    if (promptsCache.current[watchedLevel]) {
+      setPrompt(promptsCache.current[watchedLevel]);
+      return;
+    }
     const newPrompt = getContextualPrompt(watchedLevel, stats, t, clinicalProfile);
+    promptsCache.current[watchedLevel] = newPrompt;
     setPrompt(newPrompt);
   }, [watchedLevel, stats, t, clinicalProfile]);
   
